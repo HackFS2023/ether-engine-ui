@@ -12,7 +12,11 @@ const LandingPage = () => {
         <p>Revolutionize your data processing with EtherEngine</p>
 
         <Link to="/dashboard">
-          <button>Go to Dashboard</button>
+          <button>Go to User Dashboard</button>
+        </Link>
+
+        <Link to="/providerDashboard">
+          <button>Go to Developer Dashboard</button>
         </Link>
       </div>
 

@@ -1,10 +1,10 @@
 import React from 'react';
 
-const NavigationBar = () => {
+const UserNavigationBar = () => {
   return (
     <nav>
       <ul>
-        <li><a href="/">Dashboard</a></li>
+        {/* <li><a href="/">Dashboard</a></li> */}
         <li><a href="/profile">Profile</a></li>
         <li><a href="/help">Help & Support</a></li>
         <li><a href="/logout">Logout</a></li>
@@ -13,4 +13,4 @@ const NavigationBar = () => {
   );
 };
 
-export default NavigationBar;
+export default UserNavigationBar;
