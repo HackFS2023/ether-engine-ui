@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import LandingPage from './LandingPage';
-import UserDashboard from '..components/User/UserDashboard';
+import UserDashboard from '../User/UserDashboard';
 
-const App = () => {
+const Routes = () => {
   return (
     <Router>
       <Switch>
@@ -14,4 +14,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Routes;
