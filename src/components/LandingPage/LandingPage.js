@@ -21,6 +21,8 @@ const LandingPage = () => {
       </div>
 
       <div id="content">
+        <img src="your-image-url" alt="EtherEngine" />
+
         <h3>EtherEngine is a cutting-edge platform that leverages Bacalhau's distributed computing architecture to process vast amounts of data securely and efficiently. Bacalhau enables us to run your computation tasks wherever your data is stored, reducing costs and boosting performance.</h3>
 
         <h3>Effortless Deployment with FVM</h3>
