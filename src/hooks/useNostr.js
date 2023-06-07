@@ -1,4 +1,4 @@
-import React, { useState,useEffect,useCallback } from 'react';
+import React, { useState,useEffect,useCallback,useRef } from 'react';
 import {
   nip19,
   generatePrivateKey,
@@ -14,7 +14,9 @@ import {
 export default function useNostr(){
 
 
+  const eventsRef = useRef([]);
   const [events,setEvents] = useState([]);
+
   const [keys,setKeys] = useState();
   const pool = new SimplePool()
 
@@ -23,38 +25,34 @@ export default function useNostr(){
    'wss://relay2.nostrchat.io',
    'wss://nostr.fmt.wiz.biz',
    'wss://relay.damus.io',
-   'wss://nostr-pub.wellorder.net',
-   'wss://relay.nostr.info',
-   'wss://offchain.pub',
-   'wss://nos.lol',
-   'wss://brb.io',
    'wss://relay.snort.social',
-   'wss://relay.current.fyi',
-   'wss://nostr.relayer.se',
  ];
 
 
 
-  const sub = pool.sub(
-    relays,
-    [
-      {
-        kinds: [42],
-        '#e': ['08e076f673280b93475a8c53f3d17774cd351d192393be0b8f92d56093deb6e1'],
-        '#t': ['hackfs2023'],
-      }
-    ]
-  )
+ useEffect(() => {
+   const sub = pool.sub(
+     relays,
+     [
+       {
+         kinds: [42],
+         '#e': ['08e076f673280b93475a8c53f3d17774cd351d192393be0b8f92d56093deb6e1'],
+         '#t': ['hackfs2023'],
+       }
+     ]
+   )
 
-  sub.on('event', event => {
-    // this will only be called once the first time the event is received
-    event.tags.map(tag => {
-      if(tag[0] === "ipfs-hash"){
-        const newEvents = [...events,event];
-        setEvents(newEvents);
-      }
-    })
-  });
+   sub.on('event', event => {
+     // this will only be called once the first time the event is received
+     event.tags.map(tag => {
+       if(tag[0] === "ipfs-hash"){
+         eventsRef.current = [...eventsRef.current,event];
+         setEvents(eventsRef.current);
+       }
+     })
+   });
+
+ },[])
 
  // Use signature of known string to generate same sk with ethereum wallet;
  const generateKeys = async () => {

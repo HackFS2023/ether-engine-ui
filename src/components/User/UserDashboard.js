@@ -84,7 +84,7 @@ function Dashboard({ computations }) {
         {/* Display requested computations */}
         {computations && computations.requested.map(comp => <div key={comp.id}>{comp.name}</div>)}
         {
-          events.map(item => {
+          events?.map(item => {
             return(<p>{item.content}</p>)
           })
         }
