@@ -16,7 +16,8 @@ export default function useNostr(){
 
   const eventsRef = useRef([]);
   const [events,setEvents] = useState([]);
-
+  const eventsRespRef = useRef([]);
+  const [eventsResponses,setEventsResponses] = useState([]);
   const [keys,setKeys] = useState();
   const pool = new SimplePool()
 
@@ -36,18 +37,22 @@ export default function useNostr(){
      [
        {
          kinds: [42],
-         '#e': ['08e076f673280b93475a8c53f3d17774cd351d192393be0b8f92d56093deb6e1'],
-         '#t': ['hackfs2023'],
+         '#t': ['hackfs2023-v0'],
        }
      ]
    )
 
    sub.on('event', event => {
      // this will only be called once the first time the event is received
+     console.log((event))
      event.tags.map(tag => {
        if(tag[0] === "ipfs-hash"){
          eventsRef.current = [...eventsRef.current,event];
          setEvents(eventsRef.current);
+       }
+       if(tag[0] === "ipfs-hash-script"){
+         eventsRespRef.current = [...eventsRespRef.current,event];
+         setEventsResponses(eventsRespRef.current);
        }
      })
    });
@@ -88,9 +93,9 @@ export default function useNostr(){
      pubkey: keys.pk,
      created_at: Math.floor(Date.now() / 1000),
      tags: [
-       ['e','08e076f673280b93475a8c53f3d17774cd351d192393be0b8f92d56093deb6e1','wss://relay2.nostrchat.io','root'],
-       ['t', 'hackfs2023'],
-       ['ipfs-hash',cid]
+       ['e','aaae1107707fe85e56991fc1b690b52cb7104624ad4db66d8ded9b0bfe838cc2','','root'],
+       ['t', 'hackfs2023-v0'],
+       ['ipfs-hash',cid],
      ],
      content: `New request at ${cid} : ${title}`
    }
@@ -107,11 +112,41 @@ export default function useNostr(){
    })
  },[keys]);
 
+ const sendResponse = useCallback(async (cid,id,pubkey,cidDescription) => {
+   if(!keys) return
+   const event = {
+     kind: 42,
+     pubkey: keys.pk,
+     created_at: Math.floor(Date.now() / 1000),
+     tags: [
+       ['e',id,'','root'],
+       ['e', id, '', 'reply'],
+       ['p',pubkey],
+       ['t', 'hackfs2023-v0'],
+       ['ipfs-hash-request',cidDescription],
+       ['ipfs-hash-script',cid],
+     ],
+     content: `Script at ${cid} for request at ${cidDescription}`
+   }
+   event.id = getEventHash(event)
+   event.sig = getSignature(event, keys.sk);
+   console.log(event)
+   let pubs = pool.publish(relays, event)
+   pubs.on('ok', (res) => {
+     console.log(res);
+   });
+   pubs.on('failed', (relay,reason) => {
+     //this.shooting = false;
+     console.log(`failed to publish to ${relay} ${reason}`)
+   })
+ },[keys]);
 
  return({
    keys,
    generateKeys,
    sendMessage,
-   events
+   sendResponse,
+   events,
+   eventsResponses
  });
 }

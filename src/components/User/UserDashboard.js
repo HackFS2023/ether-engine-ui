@@ -9,6 +9,12 @@ Modal.setAppElement('#root');
 
 function Dashboard({ computations }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpenResp, setModalOpenResp] = useState(false);
+  const [respEvent,setRespEvent] = useState();
+  const [cidResp, setCidResp] = useState();
+
+  const [script, setScript] = useState();
+
   const {
     client,
     store
@@ -17,7 +23,9 @@ function Dashboard({ computations }) {
     keys,
     generateKeys,
     sendMessage,
-    events
+    sendResponse,
+    events,
+    eventsResponses
   } = useNostr();
 
   const [jobData, setJobData] = useState({
@@ -68,6 +76,19 @@ function Dashboard({ computations }) {
     const cid = await store(files);
     alert(cid)
     await sendMessage(cid,request.title);
+
+    setModalOpen(false); // close the modal after submitting
+  };
+  const handleSubmitResp = async (e) => {
+    e.preventDefault();
+    // Call the function to submit the job
+    // submitJob(jobData);
+    const blob = new Blob([script], { type: 'application/json' })
+    const files = [new File([blob], 'script.json')]
+    const cid = await store(files);
+    alert(cid)
+    await sendResponse(cid,respEvent.id,respEvent.pubkey,cidResp);
+
     setModalOpen(false); // close the modal after submitting
   };
 
@@ -85,7 +106,17 @@ function Dashboard({ computations }) {
         {computations && computations.requested.map(comp => <div key={comp.id}>{comp.name}</div>)}
         {
           events?.map(item => {
-            return(<p>{item.content}</p>)
+            return(<p>{item.content} <button onClick={() => {
+              setRespEvent(item);
+              setCidResp(item.tags.filter(tag => {
+                if(tag[0] === 'ipfs-hash'){
+                  return(tag)
+                }
+
+              })[0][1]);
+              setModalOpenResp(true)
+            }
+            }>Send Script</button></p>)
           })
         }
       </div>
@@ -93,6 +124,11 @@ function Dashboard({ computations }) {
         <h2>Completed Computations</h2>
         {/* Display completed computations */}
         {computations && computations.completed.map(comp => <div key={comp.id}>{comp.name}</div>)}
+        {
+          eventsResponses?.map(item => {
+            return(<p>{item.content}</p>)
+          })
+        }
       </div>
       <div>
         <h2>New Request</h2>
@@ -126,6 +162,30 @@ function Dashboard({ computations }) {
           <button type="submit">Submit</button>
         </form>
         <button onClick={() => setModalOpen(false)}>Close</button>
+      </Modal>
+      <Modal
+        isOpen={modalOpenResp}
+        onRequestClose={() => setModalOpenResp(false)}
+        contentLabel="Script Provider"
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(255, 255, 255, 0.75)', // Change this to the color of your webpage
+          },
+          content: {
+            color: 'black', // Change this to the text color of your webpage
+          },
+        }}
+      >
+        <h2>Submit Script</h2>
+        <form onSubmit={handleSubmitResp}>
+          <label>
+            Script File:
+            <input type="text" name="script" value={script} onChange={(e) => {setScript(e.target.value)}} />
+          </label>
+          {/* Add more input fields as necessary */}
+          <button type="submit">Submit</button>
+        </form>
+        <button onClick={() => setModalOpenResp(false)}>Close</button>
       </Modal>
     </div>
   );
