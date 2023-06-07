@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import Modal from 'react-modal';
 
 import useWeb3Storage from '../../hooks/useWeb3Storage'
+import useNostr from '../../hooks/useNostr';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 Modal.setAppElement('#root');
@@ -12,7 +13,12 @@ function Dashboard({ computations }) {
     client,
     store
   } = useWeb3Storage();
-
+  const {
+    keys,
+    generateKeys,
+    sendMessage,
+    events
+  } = useNostr();
 
   const [jobData, setJobData] = useState({
     APIVersion: 'V1beta1',
@@ -61,8 +67,14 @@ function Dashboard({ computations }) {
     const files = [new File([blob], 'request_info.json')]
     const cid = await store(files);
     alert(cid)
+    await sendMessage(cid,request.title);
     setModalOpen(false); // close the modal after submitting
   };
+
+  useEffect(() => {
+    generateKeys();
+  },[])
+
 
   return (
     <div>
@@ -71,6 +83,11 @@ function Dashboard({ computations }) {
         <h2>Requested Computations</h2>
         {/* Display requested computations */}
         {computations && computations.requested.map(comp => <div key={comp.id}>{comp.name}</div>)}
+        {
+          events.map(item => {
+            return(<p>{item.content}</p>)
+          })
+        }
       </div>
       <div>
         <h2>Completed Computations</h2>
