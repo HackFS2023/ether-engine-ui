@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import Modal from 'react-modal';
 
+import useWeb3Storage from '../../hooks/useWeb3Storage'
+
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 Modal.setAppElement('#root');
 
 function Dashboard({ computations }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const {
+    client,
+    store
+  } = useWeb3Storage();
+
+
   const [jobData, setJobData] = useState({
     APIVersion: 'V1beta1',
     ClientID: '',
@@ -21,18 +29,38 @@ function Dashboard({ computations }) {
     },
   });
 
+  const [request,setRequest] = useState({
+    title: '',
+    description: ''
+  });
+
+
   const handleChange = (e) => {
     // Update the jobData state with the new value
+    /*
     setJobData({
       ...jobData,
       [e.target.name]: e.target.value,
     });
+    */
+    setRequest({
+      ... request,
+      [e.target.name] : e.target.value
+    })
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Call the function to submit the job
     // submitJob(jobData);
+    const obj = {
+      title: request.title,
+      description: request.description
+    }
+    const blob = new Blob([JSON.stringify(obj)], { type: 'application/json' })
+    const files = [new File([blob], 'request_info.json')]
+    const cid = await store(files);
+    alert(cid)
     setModalOpen(false); // close the modal after submitting
   };
 
@@ -70,12 +98,12 @@ function Dashboard({ computations }) {
         <h2>Create New Request</h2>
         <form onSubmit={handleSubmit}>
           <label>
-            Client ID:
-            <input type="text" name="ClientID" value={jobData.ClientID} onChange={handleChange} />
+            Title
+            <input type="text" name="title" value={request.title} onChange={handleChange} />
           </label>
           <label>
-            Engine:
-            <input type="text" name="engine" value={jobData.Spec.engine} onChange={handleChange} />
+            Description:
+            <input type="text" name="description" value={request.description} onChange={handleChange} />
           </label>
           {/* Add more input fields as necessary */}
           <button type="submit">Submit</button>
