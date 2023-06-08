@@ -13,7 +13,7 @@ import {
 
 export default function useNostr(){
 
-
+  const version = 'hackfs2023-v1';
   const eventsRef = useRef([]);
   const [events,setEvents] = useState([]);
   const eventsRespRef = useRef([]);
@@ -37,7 +37,7 @@ export default function useNostr(){
      [
        {
          kinds: [42],
-         '#t': ['hackfs2023-v0'],
+         '#t': [version],
        }
      ]
    )
@@ -50,7 +50,7 @@ export default function useNostr(){
          eventsRef.current = [...eventsRef.current,event];
          setEvents(eventsRef.current);
        }
-       if(tag[0] === "ipfs-hash-script"){
+       if(tag[0] === "docker-hub-url"){
          eventsRespRef.current = [...eventsRespRef.current,event];
          setEventsResponses(eventsRespRef.current);
        }
@@ -94,7 +94,7 @@ export default function useNostr(){
      created_at: Math.floor(Date.now() / 1000),
      tags: [
        ['e','aaae1107707fe85e56991fc1b690b52cb7104624ad4db66d8ded9b0bfe838cc2','','root'],
-       ['t', 'hackfs2023-v0'],
+       ['t', version],
        ['ipfs-hash',cid],
      ],
      content: `New request at ${cid} : ${title}`
@@ -112,7 +112,7 @@ export default function useNostr(){
    })
  },[keys]);
 
- const sendResponse = useCallback(async (cid,id,pubkey,cidDescription) => {
+ const sendResponse = useCallback(async (url,id,pubkey,cidDescription) => {
    if(!keys) return
    const event = {
      kind: 42,
@@ -122,11 +122,10 @@ export default function useNostr(){
        ['e',id,'','root'],
        ['e', id, '', 'reply'],
        ['p',pubkey],
-       ['t', 'hackfs2023-v0'],
-       ['ipfs-hash-request',cidDescription],
-       ['ipfs-hash-script',cid],
+       ['t', version],
+       ['docker-hub-url',url]
      ],
-     content: `Script at ${cid} for request at ${cidDescription}`
+     content: `Script at ${url} for request for data at ${cidDescription}`
    }
    event.id = getEventHash(event)
    event.sig = getSignature(event, keys.sk);

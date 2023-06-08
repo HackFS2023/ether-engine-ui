@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect,useRef } from 'react';
 import Modal from 'react-modal';
 
 import useWeb3Storage from '../../hooks/useWeb3Storage'
@@ -12,8 +12,9 @@ function Dashboard({ computations }) {
   const [modalOpenResp, setModalOpenResp] = useState(false);
   const [respEvent,setRespEvent] = useState();
   const [cidResp, setCidResp] = useState();
-
   const [script, setScript] = useState();
+
+  const dataRef = useRef([]);
 
   const {
     client,
@@ -67,15 +68,13 @@ function Dashboard({ computations }) {
     e.preventDefault();
     // Call the function to submit the job
     // submitJob(jobData);
-    const obj = {
-      title: request.title,
-      description: request.description
+    let files = [];
+    for(let obj of dataRef.current){
+      files.push(new File([obj.buffer],obj.name));
     }
-    const blob = new Blob([JSON.stringify(obj)], { type: 'application/json' })
-    const files = [new File([blob], 'request_info.json')]
     const cid = await store(files);
     alert(cid)
-    await sendMessage(cid,request.title);
+    await sendMessage(cid,request.title + " " + request.description);
 
     setModalOpen(false); // close the modal after submitting
   };
@@ -83,11 +82,8 @@ function Dashboard({ computations }) {
     e.preventDefault();
     // Call the function to submit the job
     // submitJob(jobData);
-    const blob = new Blob([script], { type: 'application/json' })
-    const files = [new File([blob], 'script.json')]
-    const cid = await store(files);
-    alert(cid)
-    await sendResponse(cid,respEvent.id,respEvent.pubkey,cidResp);
+
+    await sendResponse(script,respEvent.id,respEvent.pubkey,cidResp);
 
     setModalOpen(false); // close the modal after submitting
   };
@@ -158,6 +154,25 @@ function Dashboard({ computations }) {
             Description:
             <input type="text" name="description" value={request.description} onChange={handleChange} />
           </label>
+          <label>
+            Data:
+            <input type="file" name="script" onChange={(e) => {
+              console.log(e.target.files);
+              const files = e.target.files;
+              for(let file of files){
+                const reader = new FileReader();
+                reader.onload = function(){
+                  var arrayBuffer = reader.result;
+                  dataRef.current = [...dataRef.current,{
+                    name: file.name,
+                    buffer: arrayBuffer
+                  }];
+                  console.log(arrayBuffer.byteLength);
+                };
+                reader.readAsArrayBuffer(file);
+              }
+            }}  webkitdirectory directory multiple/>
+          </label>
           {/* Add more input fields as necessary */}
           <button type="submit">Submit</button>
         </form>
@@ -179,8 +194,8 @@ function Dashboard({ computations }) {
         <h2>Submit Script</h2>
         <form onSubmit={handleSubmitResp}>
           <label>
-            Script File:
-            <input type="text" name="script" value={script} onChange={(e) => {setScript(e.target.value)}} />
+            Docker Image URL:
+            <input type="text" name="script" onChange={(e) => {setScript(e.target.value)}}/>
           </label>
           {/* Add more input fields as necessary */}
           <button type="submit">Submit</button>
