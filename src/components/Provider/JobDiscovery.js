@@ -18,19 +18,20 @@ const JobDiscovery = () => {
   const [modalOpenResp, setModalOpenResp] = useState(false);
   const [respEvent,setRespEvent] = useState();
   const [cidResp, setCidResp] = useState();
-  const [script, setScript] = useState();
+  const [spec, setSpec] = useState();
 
   useEffect(() => {
     // Fetch jobs from API
     // setJobs(response)
   }, []);
-
+  useEffect(() => {
+    generateKeys();
+  },[])
   const handleSubmitResp = async (e) => {
     e.preventDefault();
     // Call the function to submit the job
     // submitJob(jobData);
-
-    await sendResponse(script,respEvent.id,respEvent.pubkey,cidResp);
+    await sendResponse(spec,respEvent.id,respEvent.pubkey,cidResp);
 
     setModalOpenResp(false); // close the modal after submitting
   };
@@ -69,10 +70,28 @@ const JobDiscovery = () => {
         <h2>Submit Script</h2>
         <form onSubmit={handleSubmitResp}>
           <label>
-            Docker Image URL:
-            <input type="text" name="script" onChange={(e) => {setScript(e.target.value)}}/>
+            Docker Spec JSON:
+            <label>
+              Data:
+              <input type="file" name="script" onChange={(e) => {
+                console.log(e.target.files);
+                const files = e.target.files;
+                for(let file of files){
+                  const reader = new FileReader();
+                  reader.onload = function(){
+                    const newSpec = JSON.parse(reader.result).Job.Spec;
+                    setSpec(newSpec);
+                  };
+                  reader.readAsText(file);
+                }
+              }} accept=".json"/>
+            </label>
           </label>
           {/* Add more input fields as necessary */}
+          {
+            spec &&
+            <div overflow="auto">{JSON.stringify(spec)}</div>
+          }
           <button type="submit">Submit</button>
         </form>
         <button onClick={() => setModalOpenResp(false)}>Close</button>

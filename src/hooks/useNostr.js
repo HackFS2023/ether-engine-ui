@@ -112,7 +112,7 @@ export default function useNostr(){
    })
  },[keys]);
 
- const sendResponse = useCallback(async (url,id,pubkey,cidDescription) => {
+ const sendResponse = useCallback(async (spec,id,pubkey,cidDescription) => {
    if(!keys) return
    const event = {
      kind: 42,
@@ -123,9 +123,10 @@ export default function useNostr(){
        ['e', id, '', 'reply'],
        ['p',pubkey],
        ['t', version],
-       ['docker-hub-url',url]
+       ['docker-hub-url',spec.Docker.Image],
+       ['docker-spec',JSON.stringify(spec)]
      ],
-     content: `Script at ${url} for request for data at ${cidDescription}`
+     content: `Script at ${spec.Docker.Image} for request for data at ${cidDescription}`
    }
    event.id = getEventHash(event)
    event.sig = getSignature(event, keys.sk);

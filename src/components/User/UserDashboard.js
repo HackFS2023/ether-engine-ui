@@ -3,6 +3,8 @@ import Modal from 'react-modal';
 
 import useWeb3Storage from '../../hooks/useWeb3Storage'
 import useNostr from '../../hooks/useNostr';
+import useWeb3Modal from '../../hooks/useWeb3Modal';
+import useEtherEngine from '../../hooks/useEtherEngine';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 Modal.setAppElement('#root');
@@ -28,6 +30,19 @@ function Dashboard({ computations }) {
     events,
     eventsResponses
   } = useNostr();
+
+  const {
+    coinbase,
+    netId,
+    provider,
+    loadWeb3Modal
+  } = useWeb3Modal();
+
+  const {
+    etherEngine,
+    initiateContract,
+    compute,
+  } = useEtherEngine();
 
   const [jobData, setJobData] = useState({
     APIVersion: 'V1beta1',
@@ -91,7 +106,12 @@ function Dashboard({ computations }) {
   useEffect(() => {
     generateKeys();
   },[])
-
+  useEffect(() => {
+    if(coinbase && provider && !etherEngine){
+      alert(netId)
+      initiateContract(provider,netId);
+    }
+  },[coinbase,provider,netId,etherEngine])
 
   return (
     <div>
@@ -102,30 +122,49 @@ function Dashboard({ computations }) {
         {computations && computations.requested.map(comp => <div key={comp.id}>{comp.name}</div>)}
         {
           events?.map(item => {
-            if(item.tags.filter(tag => tag[0] === "pubkey" && tag[1] === keys.pk)) {
-              return(<p>{item.content} <button onClick={() => {
-                setRespEvent(item);
-                setCidResp(item.tags.filter(tag => {
-                  if(tag[0] === 'ipfs-hash'){
-                    return(tag)
-                  }
-
-                })[0][1]);
-                setModalOpenResp(true)
-              }
-              }>Send Script</button></p>)
-            }
-
+            if(item.tags.filter(tag => tag[0] === "pubkey" && tag[1] === keys.pk))
+            return(<p>{item.content}</p>)
           })
         }
       </div>
       <div>
         <h2>Completed Computations</h2>
-        {/* Display completed computations */}
-        {computations && computations.completed.map(comp => <div key={comp.id}>{comp.name}</div>)}
         {
-          eventsResponses?.map(item => {
-            return(<p>{item.content}</p>)
+          !coinbase && !etherEngine &&
+          <button onClick={async () => {
+            try{
+              await loadWeb3Modal();
+            } catch(err){
+              console.log(err)
+            }
+          }}>Connect Wallet to Compute</button>
+        }
+        {/* Display completed computations */}
+        {
+          etherEngine && eventsResponses?.map(item => {
+            return(
+              <div>
+                {
+                  item.tags.map(tag => {
+                    if(tag[0] === 'docker-spec'){
+                      return (
+                        <>
+                          <p>{item.content}</p>
+                          <div style={{overflow: "auto"}}>{tag[1]}</div>
+                          <button onClick={async () => {
+                            try{
+                              await compute(tag[1],provider)
+                            } catch(err){
+                              console.log(err)
+                            }
+                          }}>Compute</button>
+                        </>
+                      );
+                    }
+                  })
+                }
+              </div>
+            )
           })
         }
       </div>
