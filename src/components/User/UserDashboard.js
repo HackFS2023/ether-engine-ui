@@ -102,17 +102,20 @@ function Dashboard({ computations }) {
         {computations && computations.requested.map(comp => <div key={comp.id}>{comp.name}</div>)}
         {
           events?.map(item => {
-            return(<p>{item.content} <button onClick={() => {
-              setRespEvent(item);
-              setCidResp(item.tags.filter(tag => {
-                if(tag[0] === 'ipfs-hash'){
-                  return(tag)
-                }
+            if(item.tags.filter(tag => tag[0] === "pubkey" && tag[1] === keys.pk)) {
+              return(<p>{item.content} <button onClick={() => {
+                setRespEvent(item);
+                setCidResp(item.tags.filter(tag => {
+                  if(tag[0] === 'ipfs-hash'){
+                    return(tag)
+                  }
 
-              })[0][1]);
-              setModalOpenResp(true)
+                })[0][1]);
+                setModalOpenResp(true)
+              }
+              }>Send Script</button></p>)
             }
-            }>Send Script</button></p>)
+
           })
         }
       </div>
