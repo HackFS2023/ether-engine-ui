@@ -11,11 +11,12 @@ Modal.setAppElement('#root');
 
 function Dashboard({ computations }) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalOpenResp, setModalOpenResp] = useState(false);
+  const [modalInputsOpen, setModalInputsOpen] = useState(false);
+
   const [respEvent,setRespEvent] = useState();
   const [cidResp, setCidResp] = useState();
-  const [script, setScript] = useState();
-
+  const [dockerSpec, setDockerSpec] = useState();
+  const dockerSpecRef = useRef();
   const dataRef = useRef([]);
 
   const {
@@ -88,20 +89,59 @@ function Dashboard({ computations }) {
       files.push(new File([obj.buffer],obj.name));
     }
     const cid = await store(files);
-    alert(cid)
+    dataRef.current = [];
     await sendMessage(cid,request.title + " " + request.description);
 
     setModalOpen(false); // close the modal after submitting
   };
-  const handleSubmitResp = async (e) => {
+
+
+  const handleSubmitCompute = async (e) => {
     e.preventDefault();
-    // Call the function to submit the job
-    // submitJob(jobData);
+    alert(dockerSpec)
+    await compute(dockerSpec,provider);
+  }
 
-    await sendResponse(script,respEvent.id,respEvent.pubkey,cidResp);
+  const handleReadDataRequest = (e) => {
+    console.log(e.target.files);
+    const files = e.target.files;
+    dataRef.current = [];
+    for(let file of files){
+      const reader = new FileReader();
+      reader.onload = async function(){
+        const obj = {
+          name: file.name,
+          buffer: arrayBuffer
+        }
+        var arrayBuffer = reader.result;
+        dataRef.current = [...dataRef.current,];
+        console.log(arrayBuffer.byteLength);
+        if(e.target.name === "changeSpec"){
+          // submitJob(jobData);
+          const buffer = obj.buffer;
+          const name = obj.name;
+          const files = [new File([buffer],name)];
+          alert(dockerSpecRef.current)
 
-    setModalOpen(false); // close the modal after submitting
-  };
+          const cid = await store(files);
+          let newSpec = JSON.parse(dockerSpecRef.current);
+          newSpec.Docker.Entrypoint[2] = `/${name}`
+          newSpec.inputs[0][`CID`] = cid;
+          newSpec.inputs[0][`Name`] = `ipfs://${cid}`;
+          newSpec.inputs[0][`path`] = `/${name}`;
+          setDockerSpec(JSON.stringify(newSpec));
+
+
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+  }
+
+  useEffect(() => {
+    dockerSpecRef.current = dockerSpec;
+  },[dockerSpec])
 
   useEffect(() => {
     generateKeys();
@@ -152,8 +192,9 @@ function Dashboard({ computations }) {
                               etherEngine &&
                               <button onClick={async () => {
                                 try{
-
-                                  await compute(dockerTag[0][1],provider)
+                                  setDockerSpec(dockerTag[0][1]);
+                                  setModalInputsOpen(true);
+                                  //await compute(dockerTag[0][1],provider)
                                 } catch(err){
                                   console.log(err)
                                 }
@@ -228,9 +269,9 @@ function Dashboard({ computations }) {
         <button onClick={() => setModalOpen(false)}>Close</button>
       </Modal>
       <Modal
-        isOpen={modalOpenResp}
-        onRequestClose={() => setModalOpenResp(false)}
-        contentLabel="Script Provider"
+        isOpen={modalInputsOpen}
+        onRequestClose={() => setModalInputsOpen(false)}
+        contentLabel="Compute"
         style={{
           overlay: {
             backgroundColor: 'rgba(255, 255, 255, 0.75)', // Change this to the color of your webpage
@@ -240,16 +281,25 @@ function Dashboard({ computations }) {
           },
         }}
       >
-        <h2>Submit Script</h2>
-        <form onSubmit={handleSubmitResp}>
+        <h2>Compute</h2>
+        <form onSubmit={handleSubmitCompute}>
           <label>
-            Docker Image URL:
-            <input type="text" name="script" onChange={(e) => {setScript(e.target.value)}}/>
+            Docker Spec
           </label>
+          <div style={{autoflow: "auto",padding: "5px"}}>
+          {
+            dockerSpec
+          }
+          </div>
+          <label>
+            Data (optional):
+            <input type="file" name="changeSpec" onChange={handleReadDataRequest} />
+          </label>
+
           {/* Add more input fields as necessary */}
-          <button type="submit">Submit</button>
+          <button type="submit">Compute</button>
         </form>
-        <button onClick={() => setModalOpenResp(false)}>Close</button>
+        <button onClick={() => setModalInputsOpen(false)}>Close</button>
       </Modal>
     </div>
   );

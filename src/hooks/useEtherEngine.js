@@ -13,10 +13,8 @@ function useEtherEngine() {
   const initiateContract = async (provider,netId) => {
     let newEtherEngine
     // Calibration
-    alert(netId)
     if (netId === 314159) {
       newEtherEngine = new ethers.Contract(addresses.etherEngine.calibration, abis.etherEngine, provider);
-      alert(netId)
     }
     setEtherEngine(newEtherEngine);
   }
