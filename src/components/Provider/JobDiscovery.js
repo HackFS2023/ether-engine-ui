@@ -1,94 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import useNostr from '../../hooks/useNostr';
+import { Accordion, AccordionSummary, AccordionDetails } from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-// Job Discovery Section
 const JobDiscovery = () => {
-  const {
-    keys,
-    generateKeys,
-    sendMessage,
-    sendResponse,
-    events,
-    eventsResponses
-  } = useNostr();
-  // Retrieve job list from API
-  const [jobs, setJobs] = useState([]);
-
+  const { keys, generateKeys, sendMessage, sendResponse, events, eventsResponses } = useNostr();
   const [modalOpenResp, setModalOpenResp] = useState(false);
-  const [respEvent,setRespEvent] = useState();
+  const [respEvent, setRespEvent] = useState();
   const [cidResp, setCidResp] = useState();
   const [spec, setSpec] = useState();
 
   useEffect(() => {
-    // Fetch jobs from API
-    // setJobs(response)
-  }, []);
-  useEffect(() => {
     generateKeys();
-  },[])
+  }, []);
+
   const handleSubmitResp = async (e) => {
     e.preventDefault();
-    // Call the function to submit the job
-    // submitJob(jobData);
-    await sendResponse(spec,respEvent.id,respEvent.pubkey,cidResp);
-
-    setModalOpenResp(false); // close the modal after submitting
+    await sendResponse(spec, respEvent.id, respEvent.pubkey, cidResp);
+    setModalOpenResp(false);
   };
 
-  return (
-    <div>
-      {/* Display jobs here */}
-      {
-        events?.map(item => {
-          return(
-            <>
-            <div>
-              {item.content}
-              <button onClick={() => {
-                setRespEvent(item);
-                setCidResp(item.tags.filter(tag => {
-                  if(tag[0] === 'ipfs-hash'){
-                    return(tag)
-                  }
+  const handleFileUpload = (e) => {
+    const files = e.target.files;
+    for (let file of files) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        try {
+          const { Job } = JSON.parse(reader.result);
+          setSpec(Job.Spec);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+    }
+  }
 
-                })[0][1]);
-                setModalOpenResp(true)
-              }
-              }>Send Script</button>
-            </div>
-            <div style={{overflow: "auto",padding: "25px"}}>
-            {
-              eventsResponses?.map(itemResp => {
-                    if(itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply") && itemResp.pubkey === keys.pk){
-                      const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
-                      if(!dockerTag) return
-                      return (
-                        <>
-                        <p>{itemResp.content}</p>
-                        <label>Docker Spec</label>
-                        <div style={{overflow: "auto"}}>{dockerTag[0][1]}</div>
-                        </>
-                      );
-                    }
-              })
-            }
-            </div>
-            </>
-          );
-        })
-      }
+  const renderJobs = () => (
+    events?.map(item => (
+      <React.Fragment key={item.id}>
+        <div>
+          {item.content}
+          <button onClick={() => {
+            setRespEvent(item);
+            setCidResp(item.tags.find(tag => tag[0] === 'ipfs-hash')?.[1]);
+            setModalOpenResp(true);
+          }}>Send Script</button>
+        </div>
+        <div style={{ padding: '25px' }}>
+          {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
+            const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
+            if (!dockerTag) return null;
+            return (
+              <Accordion key={itemResp.id}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <p>{itemResp.content}</p>
+                </AccordionSummary>
+                <AccordionDetails>
+                <div style={{ display: "flex", flexDirection: "column", overflow: "auto", padding: "25px" }}>
+                  <React.Fragment>
+                    <label>Docker Spec:</label>
+                    <div style={{ overflow: "auto" }}>{dockerTag[1]}</div>
+                  </React.Fragment>
+                </div>
+                </AccordionDetails>
+              </Accordion>
+            );
+          })}
+        </div>
+      </React.Fragment>
+    ))
+  );
 
+  const renderModal = () => {
+    return(
       <Modal
         isOpen={modalOpenResp}
         onRequestClose={() => setModalOpenResp(false)}
         contentLabel="Script Provider"
         style={{
           overlay: {
-            backgroundColor: 'rgba(255, 255, 255, 0.75)', // Change this to the color of your webpage
+            backgroundColor: 'rgba(255, 255, 255, 0.75)',
           },
           content: {
-            color: 'black', // Change this to the text color of your webpage
+            color: 'black',
           },
         }}
       >
@@ -96,33 +92,22 @@ const JobDiscovery = () => {
         <form onSubmit={handleSubmitResp}>
           <label>
             Docker Spec JSON:
-            <label>
-              Data:
-              <input type="file" name="script" onChange={(e) => {
-                console.log(e.target.files);
-                const files = e.target.files;
-                for(let file of files){
-                  const reader = new FileReader();
-                  reader.onload = function(){
-                    const newSpec = JSON.parse(reader.result).Job.Spec;
-                    setSpec(newSpec);
-                  };
-                  reader.readAsText(file);
-                }
-              }} accept=".json"/>
-            </label>
+            <input type="file" name="script" onChange={handleFileUpload} accept=".json" />
           </label>
-          {/* Add more input fields as necessary */}
-          {
-            spec &&
-            <div overflow="auto">{JSON.stringify(spec)}</div>
-          }
+          {spec && <div style={{ overflow: "auto" }}>{JSON.stringify(spec)}</div>}
           <button type="submit">Submit</button>
         </form>
         <button onClick={() => setModalOpenResp(false)}>Close</button>
       </Modal>
+    );
+  };
+
+  return (
+    <div>
+      {renderJobs()}
+      {renderModal()}
     </div>
   );
-}
+};
 
 export default JobDiscovery;

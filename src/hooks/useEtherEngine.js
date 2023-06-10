@@ -26,7 +26,7 @@ function useEtherEngine() {
 
     const etherEngineWithSinger = etherEngine.connect(signer);
     const tx = await etherEngineWithSinger.runJob(specStr,{
-      value: ethers.parseEther("0.03"),
+      value: ethers.parseEther("0.1"),
       maxPriorityFeePerGas: priorityFee
     });
 

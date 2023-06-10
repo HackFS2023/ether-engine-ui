@@ -11,7 +11,7 @@ const providerOptions = {
     package: WalletConnectProvider, // required
     options: {
       rpc:{
-        314159: "https://filecoin-calibration.chainup.net/rpc/v1"
+        314159: "https://api.calibration.node.glif.io/rpc/v0"
       }
     }
   },
@@ -24,7 +24,7 @@ const web3Modal = new Web3Modal({
 });
 
 function useWeb3Modal(config = {}) {
-  const [provider, setProvider] = useState(new ethers.JsonRpcProvider("https://filecoin-calibration.chainup.net/rpc/v1"));
+  const [provider, setProvider] = useState(new ethers.JsonRpcProvider("https://api.calibration.node.glif.io/rpc/v0"));
   const [coinbase, setCoinbase] = useState();
   const [netId , setNetId] = useState(314159);
   const [connecting , setConnecting] = useState();
@@ -36,7 +36,7 @@ function useWeb3Modal(config = {}) {
       await web3Modal.clearCachedProvider();
       setCoinbase();
       setNetId(314159);
-      setProvider(new ethers.JsonRpcProvider("https://filecoin-calibration.chainup.net/rpc/v1"));
+      setProvider(new ethers.JsonRpcProvider("https://api.calibration.node.glif.io/rpc/v0"));
     },
     [],
   );
