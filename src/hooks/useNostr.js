@@ -22,7 +22,6 @@ export default function useNostr(){
   const pool = new SimplePool()
 
   const relays = [
-   'wss://eden.nostr.land',
    'wss://relay2.nostrchat.io',
    'wss://nostr.fmt.wiz.biz',
    'wss://relay.damus.io',
@@ -50,7 +49,7 @@ export default function useNostr(){
          eventsRef.current = [...eventsRef.current,event];
          setEvents(eventsRef.current);
        }
-       if(tag[0] === "docker-hub-url"){
+       if(tag[0] === "docker-spec"){
          eventsRespRef.current = [...eventsRespRef.current,event];
          setEventsResponses(eventsRespRef.current);
        }
@@ -123,7 +122,6 @@ export default function useNostr(){
        ['e', id, '', 'reply'],
        ['p',pubkey],
        ['t', version],
-       ['docker-hub-url',spec.Docker.Image],
        ['docker-spec',JSON.stringify(spec)]
      ],
      content: `Script at ${spec.Docker.Image} for request for data at ${cidDescription}`

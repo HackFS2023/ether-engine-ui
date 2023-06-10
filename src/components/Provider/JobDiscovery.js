@@ -41,19 +41,44 @@ const JobDiscovery = () => {
       {/* Display jobs here */}
       {
         events?.map(item => {
-          return(<p>{item.content} <button onClick={() => {
-            setRespEvent(item);
-            setCidResp(item.tags.filter(tag => {
-              if(tag[0] === 'ipfs-hash'){
-                return(tag)
-              }
+          return(
+            <>
+            <div>
+              {item.content}
+              <button onClick={() => {
+                setRespEvent(item);
+                setCidResp(item.tags.filter(tag => {
+                  if(tag[0] === 'ipfs-hash'){
+                    return(tag)
+                  }
 
-            })[0][1]);
-            setModalOpenResp(true)
-          }
-          }>Send Script</button></p>)
+                })[0][1]);
+                setModalOpenResp(true)
+              }
+              }>Send Script</button>
+            </div>
+            <div style={{overflow: "auto",padding: "25px"}}>
+            {
+              eventsResponses?.map(itemResp => {
+                    if(itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply") && itemResp.pubkey === keys.pk){
+                      const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
+                      if(!dockerTag) return
+                      return (
+                        <>
+                        <p>{itemResp.content}</p>
+                        <label>Docker Spec</label>
+                        <div style={{overflow: "auto"}}>{dockerTag[0][1]}</div>
+                        </>
+                      );
+                    }
+              })
+            }
+            </div>
+            </>
+          );
         })
       }
+
       <Modal
         isOpen={modalOpenResp}
         onRequestClose={() => setModalOpenResp(false)}

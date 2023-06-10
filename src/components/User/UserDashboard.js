@@ -108,7 +108,6 @@ function Dashboard({ computations }) {
   },[])
   useEffect(() => {
     if(coinbase && provider && !etherEngine){
-      alert(netId)
       initiateContract(provider,netId);
     }
   },[coinbase,provider,netId,etherEngine])
@@ -116,57 +115,65 @@ function Dashboard({ computations }) {
   return (
     <div>
       <h1>Dashboard</h1>
+
+      {
+        !coinbase && !etherEngine &&
+        <button onClick={async () => {
+          try{
+            await loadWeb3Modal();
+          } catch(err){
+            console.log(err)
+          }
+        }}>Connect Wallet to Compute</button>
+      }
       <div>
         <h2>Requested Computations</h2>
         {/* Display requested computations */}
         {computations && computations.requested.map(comp => <div key={comp.id}>{comp.name}</div>)}
         {
           events?.map(item => {
-            if(item.tags.filter(tag => tag[0] === "pubkey" && tag[1] === keys.pk))
-            return(<p>{item.content}</p>)
+            if(item.tags.filter(tag => tag[0] === "pubkey" && tag[1] === keys.pk)){
+
+              return(
+                <>
+                <div>{item.content}</div>
+                <div style={{overflow: "auto",padding: "25px"}}>
+                {
+                  eventsResponses?.map(itemResp => {
+                        if(itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply")){
+                          const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
+                          if(!dockerTag) return
+                          return (
+                            <>
+                            <p>{itemResp.content}</p>
+                            <label>Docker Spec</label>
+                            <div style={{overflow: "auto"}}>{dockerTag[0][1]}</div>
+                            {
+                              etherEngine &&
+                              <button onClick={async () => {
+                                try{
+
+                                  await compute(dockerTag[0][1],provider)
+                                } catch(err){
+                                  console.log(err)
+                                }
+                              }}>Compute</button>
+                            }
+                            </>
+                          );
+                        }
+                  })
+                }
+                </div>
+                </>
+              );
+            }
           })
         }
       </div>
       <div>
         <h2>Completed Computations</h2>
-        {
-          !coinbase && !etherEngine &&
-          <button onClick={async () => {
-            try{
-              await loadWeb3Modal();
-            } catch(err){
-              console.log(err)
-            }
-          }}>Connect Wallet to Compute</button>
-        }
         {/* Display completed computations */}
-        {
-          etherEngine && eventsResponses?.map(item => {
-            return(
-              <div>
-                {
-                  item.tags.map(tag => {
-                    if(tag[0] === 'docker-spec'){
-                      return (
-                        <>
-                          <p>{item.content}</p>
-                          <div style={{overflow: "auto"}}>{tag[1]}</div>
-                          <button onClick={async () => {
-                            try{
-                              await compute(tag[1],provider)
-                            } catch(err){
-                              console.log(err)
-                            }
-                          }}>Compute</button>
-                        </>
-                      );
-                    }
-                  })
-                }
-              </div>
-            )
-          })
-        }
       </div>
       <div>
         <h2>New Request</h2>
