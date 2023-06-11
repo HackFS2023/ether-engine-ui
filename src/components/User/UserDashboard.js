@@ -1,11 +1,66 @@
-import React, { useState, useEffect, useRef,useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Modal from 'react-modal';
 import useWeb3Storage from '../../hooks/useWeb3Storage';
 import useNostr from '../../hooks/useNostr';
 import useWeb3Modal from '../../hooks/useWeb3Modal';
 import useEtherEngine from '../../hooks/useEtherEngine';
+import { 
+  Box, 
+  Button, 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  Container, 
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogTitle, 
+  Grid, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  Paper, 
+  TextField, 
+  Typography,
+  Link
+} from '@material-ui/core';
+
+import { makeStyles } from '@material-ui/core/styles';
+
+
+// Material UI styles
+const useStyles = makeStyles((theme) => ({
+  root: {
+    '& > *': {
+      margin: theme.spacing(1),
+    },
+  },
+  paper: {
+    padding: theme.spacing(2),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  },
+}));
+
+
+const dialogStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    overflow: 'auto',
+    maxHeight: '70%',
+    maxWidth: '80%',
+  }
+};
+
+
 
 Modal.setAppElement('#root');
+
 
 function Dashboard({ computations }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -18,6 +73,9 @@ function Dashboard({ computations }) {
 
   const [jobsCompleted,setJobsCompleted] = useState([]);
   const [jobsFailed,setJobsFailed] = useState([]);
+
+  const classes = useStyles();
+
 
   const {
     client,
@@ -166,130 +224,169 @@ function Dashboard({ computations }) {
     }
   },[etherEngine,provider])
 
-
   const renderNewRequestModal = () => {
     return (
-      <Modal
-        isOpen={modalOpen}
-        onRequestClose={() => setModalOpen(false)}
-        contentLabel="New Request"
-        style={{ overlay: { backgroundColor: 'rgba(255, 255, 255, 0.75)' }, content: { color: 'black' } }}
+      <Dialog
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        scroll="paper"
+        aria-labelledby="scroll-dialog-title"
+        aria-describedby="scroll-dialog-description"
+        fullWidth={true}
+        maxWidth="md"
+        style={dialogStyles}
       >
-        <h2>Create New Request</h2>
-        <form onSubmit={handleSubmit}>
-          <label>
-            Title
-            <input type="text" name="title" value={request.title} onChange={handleChange} />
-          </label>
-          <label>
-            Description:
-            <input type="text" name="description" value={request.description} onChange={handleChange} />
-          </label>
-          <label>
-            Data:
+        <DialogTitle id="scroll-dialog-title">Create New Request</DialogTitle>
+        <DialogContent dividers={true}>
+          <form onSubmit={handleSubmit}>
+            <TextField label="Title" name="title" value={request.title} onChange={handleChange} fullWidth />
+            <TextField label="Description" name="description" value={request.description} onChange={handleChange} fullWidth />
             <input type="file" name="script" onChange={(e) => { handleReadDataRequest(e) }} webkitdirectory directory multiple />
-          </label>
-          <button type="submit">Submit</button>
-        </form>
-        <button onClick={() => setModalOpen(false)}>Close</button>
-      </Modal>
+            <Button type="submit" color="primary">Submit</Button>
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalOpen(false)} color="secondary">Close</Button>
+        </DialogActions>
+      </Dialog>
     )
   }
-
+  
   const renderComputeModal = () => {
     return (
-      <Modal
-        isOpen={modalInputsOpen}
-        onRequestClose={() => setModalInputsOpen(false)}
-        contentLabel="Compute"
-        style={{ overlay: { backgroundColor: 'rgba(255, 255, 255, 0.75)' }, content: { color: 'black' } }}
+      <Dialog
+        open={modalInputsOpen}
+        onClose={() => setModalInputsOpen(false)}
+        scroll="paper"
+        aria-labelledby="scroll-dialog-title"
+        aria-describedby="scroll-dialog-description"
+        fullWidth={true}
+        maxWidth="md"
+        style={dialogStyles}
       >
-        <h2>Compute</h2>
-        <form onSubmit={handleSubmitCompute}>
-          <label>Docker Spec:</label>
-          <div style={{ autoflow: "auto", padding: "5px" }}>
-            {dockerSpec}
-          </div>
-          <label>Data (optional):</label>
-          <input type="file" name="changeSpec" onChange={handleReadDataRequest} />
-          <button type="submit">Compute</button>
-        </form>
-        <button onClick={() => setModalInputsOpen(false)}>Close</button>
-      </Modal>
+        <DialogTitle id="scroll-dialog-title">Compute</DialogTitle>
+        <DialogContent dividers={true}>
+          <form onSubmit={handleSubmitCompute}>
+            <TextField label="Docker Spec" value={dockerSpec} fullWidth disabled multiline />
+            <input type="file" name="changeSpec" onChange={handleReadDataRequest} />
+            <Button type="submit" color="primary">Compute</Button>
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalInputsOpen(false)} color="secondary">Close</Button>
+        </DialogActions>
+      </Dialog>
     );
   }
-
   return (
-    <div>
-      <h1>Dashboard</h1>
-      {!coinbase && !etherEngine &&
-        <button onClick={async () => {
-          try {
-            await loadWeb3Modal();
-          } catch (err) {
-            console.log(err)
+    <Container maxWidth="md" style={{ marginTop: "20px" }}>
+      <Typography variant="h2" align="center">
+        Dashboard
+      </Typography>
+      <Grid container spacing={3} style={{ marginTop: "20px" }}>
+        <Grid item xs={12}>
+          {!coinbase && !etherEngine &&
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={async () => {
+                try {
+                  await loadWeb3Modal();
+                } catch (err) {
+                  console.log(err)
+                }
+              }}
+            >
+              Connect Wallet to Compute
+            </Button>
           }
-        }}>Connect Wallet to Compute</button>
-      }
-      <div>
-        <h2>Requested Computations</h2>
-        {computations && computations.requested && computations.requested.map(comp => <div key={comp.id}>{comp.name}</div>)}
-        {events && events.map(item => {
-          if (item.tags.filter(tag => tag[0] === "pubkey" && tag[1] === keys.pk)) {
-            return (
-              <>
-                <div>{item.content}</div>
-                <div style={{ overflow: "auto", padding: "25px" }}>
-                  {eventsResponses && eventsResponses.map(itemResp => {
-                    if (itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply")) {
-                      const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
-                      if (!dockerTag) return null;
-                      return (
-                        <>
-                          <p>{itemResp.content}</p>
-                          {etherEngine &&
-                            <button onClick={async () => {
-                              try {
-                                setDockerSpec(dockerTag[0][1]);
-                                setModalInputsOpen(true);
-                              } catch (err) {
-                                console.log(err)
-                              }
-                            }}>Compute</button>
-                          }
-                        </>
-                      );
-                    }
-                  })}
-                </div>
-              </>
-            );
-          }
-        })}
-      </div>
-      <div>
-        <h2>Completed Computations</h2>
-        {/* Display completed computations */}
-
-        {
-          jobsCompleted?.map(job => {
-            return (<p><a href={`https://ipfs.io/ipfs/${job.result}`} target="_blank" rel="noreferrer" style={{textDecoration: "none"}}>{job.result}</a></p>);
-          })
-        }
-        {
-          jobsFailed?.map(job => {
-            return (job.id);
-          })
-        }
-      </div>
-      <div>
-        <h2>New Request</h2>
-        <button onClick={() => setModalOpen(true)}>New Request</button>
-      </div>
+        </Grid>
+  
+        <Grid container item spacing={2} xs={12}>
+          <Grid item md={6} xs={12}>
+            <Paper style={{ height: '50vh', overflow: 'auto' }}>
+              <Typography variant="h4" align="center">
+                Requested Computations
+              </Typography>
+              {events && events.map(renderEvent)}
+            </Paper>
+          </Grid>
+  
+          <Grid item md={6} xs={12}>
+            <Paper style={{ height: '50vh', overflow: 'auto' }}>
+              <Typography variant="h4" align="center">
+                Completed Computations
+              </Typography>
+              <List>
+                {
+                  jobsCompleted?.map(job => {
+                    return (
+                      <ListItem>
+                        <ListItemText>
+                          <Link href={`https://ipfs.io/ipfs/${job.result}`} target="_blank" rel="noreferrer">
+                            {job.result}
+                          </Link>
+                        </ListItemText>
+                      </ListItem>
+                    );
+                  })
+                }
+                {
+                  jobsFailed?.map(job => {
+                    return (
+                      <ListItem>
+                        <ListItemText>
+                          {job.id}
+                        </ListItemText>
+                      </ListItem>
+                    );
+                  })
+                }
+              </List>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Grid>
       {renderNewRequestModal()}
       {renderComputeModal()}
-    </div>
+    </Container>
   );
+  
+  
+  
+  
+  function renderEvent(item) {
+    if (item.tags.filter(tag => tag[0] === "pubkey" && tag[1] === keys.pk)) {
+        const contentArr = item.content.split(' : ');
+        const title = contentArr[0];
+        const description = contentArr[1];
+        const dockerTag = item.tags.filter(tag => tag[0] === "docker-spec");
+        
+        return (
+            <Card style={{ marginBottom: '10px' }}>
+                <CardHeader title={title} />
+                <CardContent>
+                    <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
+                    {etherEngine && dockerTag.length > 0 &&
+                        <Button 
+                            variant="outlined" 
+                            color="primary" 
+                            style={{ marginTop: "10px" }}
+                            onClick={() => {
+                                setDockerSpec(dockerTag[0][1]);
+                                setModalInputsOpen(true);
+                            }}
+                        >
+                            Compute
+                        </Button>
+                    }
+                </CardContent>
+            </Card>
+        );
+    }
+}
+
+
 }
 
 export default Dashboard;
