@@ -8,11 +8,10 @@ import addresses from "../contracts/addresses";
 function useEtherEngine() {
 
   const [etherEngine, setEtherEngine] = useState();
-  const [jobsCompleted,setJobsCompleted] = useState([]);
-  const [jobsFailed,setJobsFailed] = useState([]);
 
 
-  const fetchPastEvents = async (provider,etherEngine) => {
+  const fetchPastEvents = useCallback(async (provider,etherEngine) => {
+    if(!etherEngine) return;
     const currentBlock = await provider.getBlockNumber();
     const pastEvents = await etherEngine.queryFilter(
       "JobCompleted",
@@ -26,11 +25,13 @@ function useEtherEngine() {
     );
     const completedJobs = pastEvents.map(event => ({ id: event.args[0], result: event.args[1] }));
     const failedJobs = pastEventsFailed.map(event => ({ id: event.args[0] }));
-    setJobsCompleted(prevJobs => [...prevJobs, ...completedJobs]);
-    setJobsFailed(prevJobs => [...prevJobs, ...failedJobs]);
-  }
+    return({
+      completed: completedJobs,
+      failed: failedJobs
+    })
+  },[etherEngine])
 
-  const subscribeToEvents = useCallback(async () => {
+  const subscribeToEvents = useCallback(async (jobsCompleted,setJobsCompleted,jobsFailed,setJobsFailed) => {
     etherEngine.on("JobCompleted", async (jobId, result) => {
       setJobsCompleted(jobsCompleted => [
         ...jobsCompleted,
@@ -74,21 +75,12 @@ function useEtherEngine() {
     await tx.wait();
   }
 
-  useEffect(() => {
-    if(etherEngine){
-      subscribeToEvents();
-    }
-  },[etherEngine])
 
-  useEffect(() => {
-    console.log(jobsCompleted)
-  },[jobsCompleted])
+
 
 
   return({
     etherEngine,
-    jobsCompleted,
-    jobsFailed,
     initiateContract,
     compute
   });

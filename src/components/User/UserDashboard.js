@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef,useMemo } from 'react';
 import Modal from 'react-modal';
 import useWeb3Storage from '../../hooks/useWeb3Storage';
 import useNostr from '../../hooks/useNostr';
@@ -15,6 +15,9 @@ function Dashboard({ computations }) {
   const [dockerSpec, setDockerSpec] = useState();
   const dockerSpecRef = useRef();
   const dataRef = useRef([]);
+
+  const [jobsCompleted,setJobsCompleted] = useState([]);
+  const [jobsFailed,setJobsFailed] = useState([]);
 
   const {
     client,
@@ -38,8 +41,6 @@ function Dashboard({ computations }) {
 
   const {
     etherEngine,
-    jobsCompleted, 
-    jobsFailed,
     initiateContract,
     compute,
   } = useEtherEngine();
@@ -121,6 +122,7 @@ function Dashboard({ computations }) {
     dockerSpecRef.current = dockerSpec;
   }, [dockerSpec])
 
+
   useEffect(() => {
     generateKeys();
   }, [])
@@ -130,6 +132,40 @@ function Dashboard({ computations }) {
       initiateContract(provider, netId);
     }
   }, [coinbase, provider, netId, etherEngine])
+
+  useMemo(async () => {
+    if(etherEngine && provider){
+      const currentBlock = await provider.getBlockNumber();
+      const pastEvents = await etherEngine.queryFilter(
+        "JobCompleted",
+        currentBlock - 300,
+        currentBlock
+      );
+      const pastEventsFailed = await etherEngine.queryFilter(
+        "JobFailed",
+        currentBlock - 300,
+        currentBlock
+      );
+      const newCompletedJobs = pastEvents.map(event => ({ id: event.args[0], result: event.args[1] }));
+      const newFailedJobs = pastEventsFailed.map(event => ({ id: event.args[0] }));
+      setJobsCompleted(newCompletedJobs)
+
+      etherEngine.on("JobCompleted", async (jobId, result) => {
+        setJobsCompleted([
+          ...jobsCompleted,
+          { id: jobId, result: result }
+        ]);
+      });
+
+      etherEngine.on("JobFailed", async jobId => {
+        setJobsFailed(jobsFailed => [
+          ...jobsFailed,
+          { id: jobId }
+        ]);
+      });
+    }
+  },[etherEngine,provider])
+
 
   const renderNewRequestModal = () => {
     return (
