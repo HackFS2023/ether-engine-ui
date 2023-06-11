@@ -38,6 +38,8 @@ function Dashboard({ computations }) {
 
   const {
     etherEngine,
+    jobsCompleted, 
+    jobsFailed,
     initiateContract,
     compute,
   } = useEtherEngine();
@@ -232,6 +234,17 @@ function Dashboard({ computations }) {
       <div>
         <h2>Completed Computations</h2>
         {/* Display completed computations */}
+
+        {
+          jobsCompleted?.map(job => {
+            return (<p><a href={`https://ipfs.io/ipfs/${job.result}`} target="_blank" rel="noreferrer" style={{textDecoration: "none"}}>{job.result}</a></p>);
+          })
+        }
+        {
+          jobsFailed?.map(job => {
+            return (job.id);
+          })
+        }
       </div>
       <div>
         <h2>New Request</h2>
