@@ -374,7 +374,7 @@ function Dashboard({ computations }) {
                 <CardHeader title={title} />
                 <CardContent>
                     <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
-                    {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" ))?.map(itemResp => {
+                    {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
                       const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
                       if (!dockerTag) return null;
                       return (
