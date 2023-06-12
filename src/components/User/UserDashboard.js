@@ -4,27 +4,28 @@ import useWeb3Storage from '../../hooks/useWeb3Storage';
 import useNostr from '../../hooks/useNostr';
 import useWeb3Modal from '../../hooks/useWeb3Modal';
 import useEtherEngine from '../../hooks/useEtherEngine';
-import { 
-  Box, 
-  Button, 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  Container, 
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
-  DialogTitle, 
-  Grid, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  Paper, 
-  TextField, 
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  TextField,
   Typography,
-  Link
+  Link,
+  Accordion, AccordionSummary, AccordionDetails
 } from '@material-ui/core';
-
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { makeStyles } from '@material-ui/core/styles';
 
 
@@ -251,7 +252,7 @@ function Dashboard({ computations }) {
       </Dialog>
     )
   }
-  
+
   const renderComputeModal = () => {
     return (
       <Dialog
@@ -286,9 +287,9 @@ function Dashboard({ computations }) {
       <Grid container spacing={3} style={{ marginTop: "20px" }}>
         <Grid item xs={12}>
           {!coinbase && !etherEngine &&
-            <Button 
-              variant="contained" 
-              color="primary" 
+            <Button
+              variant="contained"
+              color="primary"
               onClick={async () => {
                 try {
                   await loadWeb3Modal();
@@ -301,7 +302,7 @@ function Dashboard({ computations }) {
             </Button>
           }
         </Grid>
-  
+
         <Grid container item spacing={2} xs={12}>
           <Grid item md={6} xs={12}>
             <Paper style={{ height: '50vh', overflow: 'auto' }}>
@@ -311,7 +312,7 @@ function Dashboard({ computations }) {
               {events && events.map(renderEvent)}
             </Paper>
           </Grid>
-  
+
           <Grid item md={6} xs={12}>
             <Paper style={{ height: '50vh', overflow: 'auto' }}>
               <Typography variant="h4" align="center">
@@ -351,35 +352,53 @@ function Dashboard({ computations }) {
       {renderComputeModal()}
     </Container>
   );
-  
-  
-  
-  
+
+
+
+
   function renderEvent(item) {
     if (item.tags.filter(tag => tag[0] === "pubkey" && tag[1] === keys.pk)) {
         const contentArr = item.content.split(' : ');
         const title = contentArr[0];
         const description = contentArr[1];
-        const dockerTag = item.tags.filter(tag => tag[0] === "docker-spec");
-        
+
         return (
             <Card style={{ marginBottom: '10px' }}>
                 <CardHeader title={title} />
                 <CardContent>
                     <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
-                    {etherEngine && dockerTag.length > 0 &&
-                        <Button 
-                            variant="outlined" 
-                            color="primary" 
-                            style={{ marginTop: "10px" }}
-                            onClick={() => {
-                                setDockerSpec(dockerTag[0][1]);
-                                setModalInputsOpen(true);
-                            }}
-                        >
-                            Compute
-                        </Button>
-                    }
+                    {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
+                      const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
+                      if (!dockerTag) return null;
+                      return (
+                        <Accordion key={itemResp.id} style={{padding: "50px"}}>
+                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Typography variant="body2" color="textSecondary" component="p">{itemResp.content}</Typography>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                          <div style={{ display: "flex", flexDirection: "column", overflow: "auto", padding: "25px" }}>
+                            <React.Fragment>
+                              <label>Docker Spec:</label>
+                              <div style={{ overflow: "auto" }}>{dockerTag[1]}</div>
+                              {etherEngine && dockerTag.length > 0 &&
+                                  <Button
+                                      variant="outlined"
+                                      color="primary"
+                                      style={{ marginTop: "10px" }}
+                                      onClick={() => {
+                                          setDockerSpec(dockerTag[1]);
+                                          setModalInputsOpen(true);
+                                      }}
+                                  >
+                                      Compute
+                                  </Button>
+                              }
+                            </React.Fragment>
+                          </div>
+                          </AccordionDetails>
+                        </Accordion>
+                      );
+                    })}
                 </CardContent>
             </Card>
         );
