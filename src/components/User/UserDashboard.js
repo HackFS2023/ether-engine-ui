@@ -284,9 +284,9 @@ function Dashboard({ computations }) {
       <Typography variant="h2" align="center">
         Dashboard
       </Typography>
-      <Button 
-      variant="contained" 
-      color="primary" 
+      <Button
+      variant="contained"
+      color="primary"
       onClick={() => setModalOpen(true)}
     >
       Create New Request
@@ -364,7 +364,7 @@ function Dashboard({ computations }) {
 
 
   function renderEvent(item) {
-    if (item.tags.filter(tag => tag[0] === "pubkey" && tag[1] === keys.pk)) {
+    if (item.pubkey === keys.pk) {
         const contentArr = item.content.split(' : ');
         const title = contentArr[0];
         const description = contentArr[1];
@@ -374,6 +374,7 @@ function Dashboard({ computations }) {
                 <CardHeader title={title} />
                 <CardContent>
                     <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
+
                     {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
                       const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
                       if (!dockerTag) return null;
