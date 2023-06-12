@@ -284,6 +284,13 @@ function Dashboard({ computations }) {
       <Typography variant="h2" align="center">
         Dashboard
       </Typography>
+      <Button 
+      variant="contained" 
+      color="primary" 
+      onClick={() => setModalOpen(true)}
+    >
+      Create New Request
+    </Button>
       <Grid container spacing={3} style={{ marginTop: "20px" }}>
         <Grid item xs={12}>
           {!coinbase && !etherEngine &&
@@ -367,7 +374,7 @@ function Dashboard({ computations }) {
                 <CardHeader title={title} />
                 <CardContent>
                     <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
-                    {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
+                    {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" ))?.map(itemResp => {
                       const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
                       if (!dockerTag) return null;
                       return (
