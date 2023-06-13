@@ -35,11 +35,11 @@ function Main() {
         <Route path="/help" element={<HelpSupport />} />
 
         {/* StorageProvider/Developer */}
-        <Route path="/contracts" element={<ContractManager />} />
+        <Route path="/providerDashboard" element={<JobDiscovery />} />
         <Route path="/data" element={<DataManager />} />
         <Route path="/jobs" element={<JobManager />} />
-        <Route path="/discover" element={<JobDiscovery />} />
-      </Routes>
+        {/* <Route path="/discover" element={<JobDiscovery />} /> */}
+        </Routes>
     </div>
   );
 }

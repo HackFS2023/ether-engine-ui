@@ -70,39 +70,46 @@ const Profile = () => {
   },[keys])
 
   return (
-    <div>
-      <h2>Profile</h2>
-      {/* User profile information */}
-      <div>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'Arial, sans-serif', color: 'white' }}>
+      <h2 style={{ borderBottom: '1px solid #ddd' }}>Profile</h2>
+      <div style={{ margin: '20px 0' }}>
         <h4>Nostr Key</h4>
         <p>public key: {keys?.pk}</p>
         <p>npub: {keys?.npub}</p>
         <p>sk: {keys?.sk}</p>
-        <p><small>Use your SK to import profile at any nostr client</small></p>
-        <p><small>Some Nostr Clients: <a href="https://snort.social/" target="_blank">Snort Social</a>,<a href="https://iris.to/" target="_blank">Iris</a>,<a href="https://www.nostrchat.io/channel/aaae1107707fe85e56991fc1b690b52cb7104624ad4db66d8ded9b0bfe838cc2" target="blank">Nostr Chat</a></small></p>
+        <p style={{ fontSize: '0.8em' }}>
+          <small>Use your SK to import profile at any nostr client</small>
+        </p>
+        <p style={{ fontSize: '0.8em' }}>
+          <small>Some Nostr Clients: <a href="https://snort.social/" target="_blank" style={{ color: '#1678c2' }}>Snort Social</a>,<a href="https://iris.to/" target="_blank" style={{ color: '#1678c2' }}>Iris</a>,<a href="https://www.nostrchat.io/channel/aaae1107707fe85e56991fc1b690b52cb7104624ad4db66d8ded9b0bfe838cc2" target="blank" style={{ color: '#1678c2' }}>Nostr Chat</a></small>
+        </p>
       </div>
       {
         !coinbase ?
-        <button onClick={async () => {
+        <button style={{ padding: '10px 20px', backgroundColor: '#1678c2', color: 'white', border: 'none', borderRadius: '5px' }} onClick={async () => {
           try {
             await loadWeb3Modal();
           } catch (err) {
             console.log(err)
           }
         }}>Connect Wallet to Show Info</button> :
-        <div>
+        <div style={{ margin: '20px 0' }}>
           <h4>Wallet</h4>
           <p>Address: {coinbase}</p>
-          <button onClick={saveNostrKeys}>Save NOSTR private key using Orbis</button>
-          <p><small>Orbis encrypted messages: <a href="https://docs.useorbis.com/sdk/methods/conversations/createConversation" target="_blank">Orbis SDK</a> private message</small></p>
+          <button style={{ padding: '10px 20px', backgroundColor: '#1678c2', color: 'white', border: 'none', borderRadius: '5px' }} onClick={saveNostrKeys}>Save NOSTR private key using Orbis</button>
+          <p style={{ fontSize: '0.8em' }}>
+            <small>Orbis encrypted messages: <a href="https://docs.useorbis.com/sdk/methods/conversations/createConversation" target="_blank" style={{ color: '#1678c2' }}>Orbis SDK</a> private message</small>
+          </p>
           {
             convId &&
-            <p>Check private message at <a href={`https://app.orbis.club/messages/${convId}`} target="_blank">Orbis Club</a> and stream at <a href={`https://cerscan.com/mainnet/stream/${convId}`} target="_blank">Cerscan</a></p>
+            <p>Check private message at <a href={`https://app.orbis.club/messages/${convId}`} target="_blank" style={{ color: '#1678c2' }}>Orbis Club</a> and stream at <a href={`https://cerscan.com/mainnet/stream/${convId}`} target="_blank" style={{ color: '#1678c2' }}>Cerscan</a></p>
           }
         </div>
       }
     </div>
   );
+  
+  
 };
 
 export default Profile;

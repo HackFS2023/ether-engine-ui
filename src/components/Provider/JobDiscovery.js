@@ -11,6 +11,87 @@ const JobDiscovery = () => {
   const [cidResp, setCidResp] = useState();
   const [spec, setSpec] = useState();
 
+
+
+
+
+  const [dockerImage, setDockerImage] = useState('');
+  const [dockerEntrypoint, setDockerEntrypoint] = useState('');
+
+  const [creatingDockerSpec, setCreatingDockerSpec] = useState(false);
+
+// This is the style for the modal you may want to customize.
+const modalStyle = {
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  },
+  content: {
+    color: 'white',
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: '#282c34',
+    border: 'none',
+    borderRadius: '10px',
+    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+};
+
+
+  const handleImageChange = (event) => {
+    setDockerImage(event.target.value);
+  }
+
+  const handleEntrypointChange = (event) => {
+    setDockerEntrypoint(event.target.value);
+  }
+
+  const handleUseSpec = () => {
+    // Build the Docker spec object
+    const newSpec = {
+      "Engine":"Docker",
+      "Verifier":"Noop",
+      "Publisher":"Estuary",
+      "PublisherSpec":{
+        "Type":"Estuary"
+      },
+      "Docker":{
+        "Image": dockerImage,
+        "Entrypoint": dockerEntrypoint.split(','), // assuming the entrypoints are comma-separated
+      },
+      "Language":{"JobContext":{}},
+      "Wasm":{"EntryModule":{}},
+      "Resources":{"GPU":""},
+      "Network":{"Type":"None"},
+      "Timeout":1800,
+      "inputs":[{
+        "StorageSource":"IPFS",
+        "Name":"ipfs://bafkreihqu3gkbckhh25v6hpgffq3blfswh2iex2gkjjsjjyjinpkcb7cri",
+        "CID":"bafkreihqu3gkbckhh25v6hpgffq3blfswh2iex2gkjjsjjyjinpkcb7cri",
+        "path":"/data.csv"
+      }],
+      "outputs":[{
+        "StorageSource":"IPFS",
+        "Name":"outputs",
+        "path":"/outputs"
+      }],
+      "Deal":{"Concurrency":1}
+    };
+    
+
+    setSpec(newSpec); // Update the spec state variable with the created spec
+
+    // Toggle back to the form
+    setCreatingDockerSpec(false);
+  }
+
   useEffect(() => {
     generateKeys();
   }, []);
@@ -36,11 +117,24 @@ const JobDiscovery = () => {
       reader.readAsText(file);
     }
   }
-
   const renderJobs = () => (
     events?.map(item => (
       <React.Fragment key={item.id}>
-        <div>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          margin: '20px', 
+          padding: '20px', 
+          boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', 
+          borderRadius: '5px',
+          backgroundColor: 'white',
+          color: 'black',
+          width: '50%',
+          overflow: 'auto',
+          alignSelf: 'center' 
+        }}>
           {item.content}
           <button onClick={() => {
             setRespEvent(item);
@@ -48,7 +142,13 @@ const JobDiscovery = () => {
             setModalOpenResp(true);
           }}>Send Script</button>
         </div>
-        <div style={{ padding: '25px' }}>
+        <div style={{ 
+          padding: '25px',
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center', 
+          alignItems: 'center', 
+        }}>
           {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
             const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
             if (!dockerTag) return null;
@@ -58,7 +158,20 @@ const JobDiscovery = () => {
                   <p>{itemResp.content}</p>
                 </AccordionSummary>
                 <AccordionDetails>
-                <div style={{ display: "flex", flexDirection: "column", overflow: "auto", padding: "25px" }}>
+                <div style={{ 
+                  display: "flex", 
+                  flexDirection: "column", 
+                  overflow: "auto", 
+                  padding: "25px",
+                  boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', 
+                  borderRadius: '5px',
+                  backgroundColor: 'white',
+                  color: 'black',
+                  width: '50%',
+                  overflow: 'auto',
+                  alignSelf: 'center' 
+                }}>
+
                   <React.Fragment>
                     <label>Docker Spec:</label>
                     <div style={{ overflow: "auto" }}>{dockerTag[1]}</div>
@@ -72,35 +185,44 @@ const JobDiscovery = () => {
       </React.Fragment>
     ))
   );
+  
 
   const renderModal = () => {
-    return(
-      <Modal
-        isOpen={modalOpenResp}
-        onRequestClose={() => setModalOpenResp(false)}
-        contentLabel="Script Provider"
-        style={{
-          overlay: {
-            backgroundColor: 'rgba(255, 255, 255, 0.75)',
-          },
-          content: {
-            color: 'black',
-          },
-        }}
-      >
+    if (creatingDockerSpec) {
+      return (
+        <Modal isOpen={modalOpenResp} onRequestClose={() => setModalOpenResp(false)} contentLabel="Create Docker Spec" style={modalStyle}>
+          <h2>Create Docker Spec</h2>
+          <label>
+            Docker Image:
+            <input type="text" onChange={handleImageChange} value={dockerImage} style={{ width: '100%', marginBottom: '10px' }} />
+          </label>
+          <label>
+            Docker Entrypoint (comma-separated):
+            <input type="text" onChange={handleEntrypointChange} value={dockerEntrypoint} style={{ width: '100%', marginBottom: '10px' }} />
+          </label>
+          <button onClick={handleUseSpec}>Use Spec</button>
+          <button onClick={() => setCreatingDockerSpec(false)}>Cancel</button>
+        </Modal>
+      );
+    }
+
+    return (
+      <Modal isOpen={modalOpenResp} onRequestClose={() => setModalOpenResp(false)} contentLabel="Script Provider" style={modalStyle}>
         <h2>Submit Script</h2>
+        <button onClick={() => setCreatingDockerSpec(true)}>Create Docker spec</button>
         <form onSubmit={handleSubmitResp}>
           <label>
             Docker Spec JSON:
             <input type="file" name="script" onChange={handleFileUpload} accept=".json" />
           </label>
-          {spec && <div style={{ overflow: "auto" }}>{JSON.stringify(spec)}</div>}
-          <button type="submit">Submit</button>
+          {spec && <div style={{ overflow: "auto", marginTop: '10px', marginBottom: '10px' }}>{JSON.stringify(spec)}</div>}
+          <button type="submit" style={{marginRight: '10px'}}>Submit</button>
         </form>
         <button onClick={() => setModalOpenResp(false)}>Close</button>
       </Modal>
     );
   };
+  
 
   return (
     <div>
