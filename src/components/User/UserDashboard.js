@@ -356,6 +356,40 @@ function Dashboard({ computations }) {
           </Grid>
         </Grid>
       </Grid>
+      <div>
+      {events && events.map(item => {
+        if (item.pubkey === keys.pk) {
+          return (
+            <>
+              <div>{item.content}</div>
+              <div style={{ overflow: "auto", padding: "25px" }}>
+                {eventsResponses && eventsResponses.map(itemResp => {
+                  if (itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply")[0]) {
+                    const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
+                    if (!dockerTag) return null;
+                    return (
+                      <>
+                        <p>{itemResp.content}</p>
+                        {etherEngine &&
+                          <button onClick={async () => {
+                            try {
+                              setDockerSpec(dockerTag[0][1]);
+                              setModalInputsOpen(true);
+                            } catch (err) {
+                              console.log(err)
+                            }
+                          }}>Compute</button>
+                        }
+                      </>
+                    );
+                  }
+                })}
+              </div>
+            </>
+          );
+        }
+      })}
+      </div>
       {renderNewRequestModal()}
       {renderComputeModal()}
     </Container>
@@ -376,38 +410,28 @@ function Dashboard({ computations }) {
                 <CardContent>
                     <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
 
-                    {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
-                      const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
-                      if (!dockerTag) return null;
-                      return (
-                        <Accordion key={itemResp.id} style={{padding: "50px"}}>
-                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography variant="body2" color="textSecondary" component="p">{itemResp.content}</Typography>
-                          </AccordionSummary>
-                          <AccordionDetails>
-                          <div style={{ display: "flex", flexDirection: "column", overflow: "auto", padding: "25px" }}>
-                            <React.Fragment>
-                              <label>Docker Spec:</label>
-                              <div style={{ overflow: "auto" }}>{dockerTag[1]}</div>
-                              {etherEngine && dockerTag.length > 0 &&
-                                  <Button
-                                      variant="outlined"
-                                      color="primary"
-                                      style={{ marginTop: "10px" }}
-                                      onClick={() => {
-                                          setDockerSpec(dockerTag[1]);
-                                          setModalInputsOpen(true);
-                                      }}
-                                  >
-                                      Compute
-                                  </Button>
+
+                      {eventsResponses && eventsResponses.map(itemResp => {
+                        if (itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply")[0]) {
+                          const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
+                          if (!dockerTag) return null;
+                          return (
+                            <>
+                              <p>{itemResp.content}</p>
+                              {etherEngine &&
+                                <button onClick={async () => {
+                                  try {
+                                    setDockerSpec(dockerTag[0][1]);
+                                    setModalInputsOpen(true);
+                                  } catch (err) {
+                                    console.log(err)
+                                  }
+                                }}>Compute</button>
                               }
-                            </React.Fragment>
-                          </div>
-                          </AccordionDetails>
-                        </Accordion>
-                      );
-                    })}
+                            </>
+                          );
+                        }
+                      })}
                 </CardContent>
             </Card>
         );
