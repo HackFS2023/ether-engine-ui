@@ -134,6 +134,7 @@ function Dashboard({ computations }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     let files = [];
+
     for (let obj of dataRef.current) {
       files.push(new File([obj.buffer], obj.name));
     }
@@ -159,7 +160,7 @@ function Dashboard({ computations }) {
           buffer: arrayBuffer
         }
         var arrayBuffer = reader.result;
-        dataRef.current = [...dataRef.current,];
+        dataRef.current = [...dataRef.current,arrayBuffer];
         if (e.target.name === "changeSpec") {
           const buffer = obj.buffer;
           const name = obj.name;
