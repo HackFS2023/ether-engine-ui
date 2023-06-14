@@ -60,30 +60,49 @@ export default function useNostr(){
 
  // Use signature of known string to generate same sk with ethereum wallet;
  const generateKeys = async () => {
-
    let sk = localStorage.getItem('nostr-sk');
    if(!sk){
      sk = generatePrivateKey();
    }
    localStorage.setItem('nostr-sk',sk);
-   let nsec = nip19.nsecEncode(sk)
-   let {type, data} = nip19.decode(nsec);
-   let pk = getPublicKey(sk)
-   let npub = nip19.npubEncode(pk)
-   const newKeys = {
-     pk: pk,
-     npub: npub,
-     sk: sk
-   };
-   setKeys(newKeys);
-   return({
-     pk: pk,
-     npub: npub,
-     sk: sk
-   });
+   return setKeysFromSecretKey(sk);
  }
 
+  const setKeysFromSecretKey = (sk) => {
+    let pk = getPublicKey(sk)
+    let npub = nip19.npubEncode(pk)
+    const newKeys = {
+      pk: pk,
+      npub: npub,
+      sk: sk
+    };
+    setKeys(newKeys);
+    return newKeys;
+  }
 
+  const loadKeys = async (polybase, address) => {
+    const collection = polybase.collection("User");
+    try {
+      const record = await collection.record(address).get();
+      const { data } = record;
+      if (data && data.nostrSecretKey) {
+        console.log(`loaded key from Polybase: ${data.nostrSecretKey}`);
+        setKeysFromSecretKey(data.nostrSecretKey);
+      } else {
+        throw new Error('No data received from Polybase!');
+      }
+    }
+    catch (e) {
+      console.log('storing new key!');
+      const sk = generatePrivateKey();
+      await collection.create([address, sk]);
+      setKeysFromSecretKey(sk);
+    }
+  }
+
+  const clearKeys = () => {
+    setKeys(undefined);
+  }
 
  const sendMessage = useCallback(async (cid,title) => {
    if(!keys) return
@@ -142,6 +161,8 @@ export default function useNostr(){
  return({
    keys,
    generateKeys,
+   loadKeys,
+   clearKeys,
    sendMessage,
    sendResponse,
    events,
