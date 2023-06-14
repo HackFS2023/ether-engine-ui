@@ -18,6 +18,12 @@ const JobDiscovery = () => {
   const [dockerImage, setDockerImage] = useState('');
   const [dockerEntrypoint, setDockerEntrypoint] = useState('');
 
+  const [specCIDInput, setSpecCIDInput] = useState('');
+
+
+  const [specPathInput, setSpecPathInput] = useState('');
+
+
   const [creatingDockerSpec, setCreatingDockerSpec] = useState(false);
 
 // This is the style for the modal you may want to customize.
@@ -53,6 +59,15 @@ const modalStyle = {
     setDockerEntrypoint(event.target.value);
   }
 
+  
+  const handleCIDChange = (event) => {
+    setSpecCIDInput(event.target.value);
+  }
+
+  const handlePathInputChange = (event) => {
+    setSpecPathInput(event.target.value);
+  }
+
   const handleUseSpec = () => {
     // Build the Docker spec object
     const newSpec = {
@@ -73,9 +88,9 @@ const modalStyle = {
       "Timeout":1800,
       "inputs":[{
         "StorageSource":"IPFS",
-        "Name":"ipfs://bafkreihqu3gkbckhh25v6hpgffq3blfswh2iex2gkjjsjjyjinpkcb7cri",
-        "CID":"bafkreihqu3gkbckhh25v6hpgffq3blfswh2iex2gkjjsjjyjinpkcb7cri",
-        "path":"/data.csv"
+        "Name":`ipfs://${specCIDInput}`,
+        "CID":specCIDInput,
+        "path":specPathInput
       }],
       "outputs":[{
         "StorageSource":"IPFS",
@@ -195,6 +210,14 @@ const modalStyle = {
           <label>
             Docker Image:
             <input type="text" onChange={handleImageChange} value={dockerImage} style={{ width: '100%', marginBottom: '10px' }} />
+          </label>
+          <label>
+            Spec DATA path:
+            <input type="text" onChange={handlePathInputChange} value={specPathInput} style={{ width: '100%', marginBottom: '10px' }} />
+          </label>
+          <label>
+            Spec CID path:
+            <input type="text" onChange={handleCIDChange} value={specCIDInput} style={{ width: '100%', marginBottom: '10px' }} />
           </label>
           <label>
             Docker Entrypoint (comma-separated):
