@@ -85,10 +85,11 @@ export default function useNostr(){
     try {
       const record = await collection.record(address).get();
       const { data } = record;
-      if (data && data.nostrSecretKey) {
+      const currentSecretKey = keys?.sk;
+      if (data && data.nostrSecretKey && data.nostrSecretKey !== currentSecretKey) {
         console.log(`loaded key from Polybase: ${data.nostrSecretKey}`);
         setKeysFromSecretKey(data.nostrSecretKey);
-      } else {
+      } else if (!data.nostrSecretKey) {
         throw new Error('No data received from Polybase!');
       }
     }
@@ -99,10 +100,9 @@ export default function useNostr(){
       setKeysFromSecretKey(sk);
     }
   }
-
-  const clearKeys = () => {
+  const clearKeys = useCallback(() => {
     setKeys(undefined);
-  }
+  }, []); // add any dependencies of clearKeys here
 
  const sendMessage = useCallback(async (cid,title) => {
    if(!keys) return

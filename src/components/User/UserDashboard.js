@@ -189,13 +189,18 @@ function Dashboard({ computations }) {
 
 
   useEffect(() => {
-    if (polyState && polyState.type === 'metamask' && !polyLoading) {
-      loadKeys(polybase, polyState.userId);
+    if (polyState && polyState.type === 'metamask'
+     && !polyLoading) {
+      console.log('loadKeys called');
+      (async () => {
+        await loadKeys(polybase, polyState.userId);
+      })();
     } else {
+      console.log('clearKeys called');
       clearKeys();
     }
-  }, [polybase, polyState, polyLoading, clearKeys, loadKeys])
-
+  }, [polybase, polyState, polyLoading, clearKeys]);
+  
   useEffect(() => {
     if (coinbase && provider && !etherEngine) {
       initiateContract(provider, netId);
