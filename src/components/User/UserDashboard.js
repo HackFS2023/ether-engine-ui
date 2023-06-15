@@ -29,6 +29,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { makeStyles } from '@material-ui/core/styles';
 import { useAuth, useIsAuthenticated, usePolybase } from "@polybase/react";
 
+
 // Material UI styles
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -77,6 +78,9 @@ function Dashboard({ computations }) {
 
   const classes = useStyles();
 
+  const polybase = usePolybase();
+  const { auth: polyAuth, state: polyState, loading: polyLoading } = useAuth();
+  const [isLoggedIn, loading] = useIsAuthenticated();
 
   const {
     client,
@@ -84,8 +88,9 @@ function Dashboard({ computations }) {
   } = useWeb3Storage();
   const {
     keys,
+    generateKeys,
     loadKeys,
-    clearKeys,
+    setKeysFromSecretKey,
     sendMessage,
     sendResponse,
     events,
@@ -104,6 +109,17 @@ function Dashboard({ computations }) {
     initiateContract,
     compute,
   } = useEtherEngine();
+
+  useEffect(() => {
+    if (polyState && polyState.type === 'metamask'
+     && !polyLoading) {
+      console.log('loadKeys called');
+      (async () => {
+        await loadKeys(polybase, polyState.userId);
+      })();
+    }
+  }, [polybase, polyState, polyLoading]);
+
 
   const [jobData, setJobData] = useState({
     APIVersion: 'V1beta1',
@@ -179,28 +195,15 @@ function Dashboard({ computations }) {
     }
   }
 
-  const polybase = usePolybase();
-  const { auth: polyAuth, state: polyState, loading: polyLoading } = useAuth();
-  const [isLoggedIn, loading] = useIsAuthenticated();
-
   useEffect(() => {
     dockerSpecRef.current = dockerSpec;
   }, [dockerSpec])
 
 
   useEffect(() => {
-    if (polyState && polyState.type === 'metamask'
-     && !polyLoading) {
-      console.log('loadKeys called');
-      (async () => {
-        await loadKeys(polybase, polyState.userId);
-      })();
-    } else {
-      console.log('clearKeys called');
-      clearKeys();
-    }
-  }, [polybase, polyState, polyLoading, clearKeys]);
-  
+    generateKeys();
+  }, [])
+
   useEffect(() => {
     if (coinbase && provider && !etherEngine) {
       initiateContract(provider, netId);
@@ -308,7 +311,7 @@ function Dashboard({ computations }) {
     </Button>
       <Grid container spacing={3} style={{ marginTop: "20px" }}>
         <Grid item xs={12}>
-          {((!coinbase && !etherEngine) || !isLoggedIn) &&
+          {!coinbase && !etherEngine &&
             <Button
               variant="contained"
               color="primary"
@@ -316,6 +319,7 @@ function Dashboard({ computations }) {
                 try {
                   await loadWeb3Modal();
                   await polyAuth.signIn();
+
                 } catch (err) {
                   console.log(err)
                 }
@@ -372,38 +376,6 @@ function Dashboard({ computations }) {
         </Grid>
       </Grid>
       <div>
-      {events && events.map(item => {
-        if (keys && item.pubkey === keys.pk) {
-          return (
-            <>
-              <div>{item.content}</div>
-              <div style={{ overflow: "auto", padding: "25px" }}>
-                {eventsResponses && eventsResponses.map(itemResp => {
-                  if (itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply")[0]) {
-                    const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
-                    if (!dockerTag) return null;
-                    return (
-                      <>
-                        <p>{itemResp.content}</p>
-                        {etherEngine &&
-                          <button onClick={async () => {
-                            try {
-                              setDockerSpec(dockerTag[0][1]);
-                              setModalInputsOpen(true);
-                            } catch (err) {
-                              console.log(err)
-                            }
-                          }}>Compute</button>
-                        }
-                      </>
-                    );
-                  }
-                })}
-              </div>
-            </>
-          );
-        }
-      })}
       </div>
       {renderNewRequestModal()}
       {renderComputeModal()}
@@ -414,7 +386,7 @@ function Dashboard({ computations }) {
 
 
   function renderEvent(item) {
-    if (keys && item.pubkey === keys.pk) {
+    if (item.pubkey === keys.pk) {
         const contentArr = item.content.split(' : ');
         const title = contentArr[0];
         const description = contentArr[1];
