@@ -24,6 +24,8 @@ export default function useNostr(){
   const relays = [
    'wss://relay2.nostrchat.io',
    'wss://nostr.fmt.wiz.biz',
+   'wss://nos.lol',
+   'wss://nostr-01.bolt.observer/',
    'wss://relay.damus.io',
    'wss://relay.snort.social',
  ];

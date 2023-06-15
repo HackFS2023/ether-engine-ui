@@ -151,10 +151,10 @@ function Dashboard({ computations }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     let files = [];
-
     for (let obj of dataRef.current) {
       files.push(new File([obj.buffer], obj.name));
     }
+    console.log(files)
     const cid = await store(files);
     dataRef.current = [];
     await sendMessage(cid, request.title + " " + request.description);
@@ -172,12 +172,12 @@ function Dashboard({ computations }) {
     for (let file of files) {
       const reader = new FileReader();
       reader.onload = async function () {
+        var arrayBuffer = reader.result;
         const obj = {
           name: file.name,
           buffer: arrayBuffer
         }
-        var arrayBuffer = reader.result;
-        dataRef.current = [...dataRef.current,arrayBuffer];
+        dataRef.current = [...dataRef.current,obj];
         if (e.target.name === "changeSpec") {
           const buffer = obj.buffer;
           const name = obj.name;
@@ -398,7 +398,7 @@ function Dashboard({ computations }) {
                     <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
 
 
-                      {eventsResponses && eventsResponses.map(itemResp => {
+                      {eventsResponses?.map(itemResp => {
                         if (itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply")[0]) {
                           const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
                           if (!dockerTag) return null;
