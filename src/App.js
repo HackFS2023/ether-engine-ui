@@ -11,10 +11,18 @@ import ContractManager from './components/Provider/ContractManager';
 import DataManager from './components/Provider/DataManager';
 import JobManager from './components/Provider/JobManagement';
 import JobDiscovery from './components/Provider/JobDiscovery';
+import { PolybaseProvider, AuthProvider } from "@polybase/react";
+import { Polybase } from "@polybase/client";
+import { Auth } from "@polybase/auth"
+
+const polybase = new Polybase({
+  defaultNamespace: "pk/0x683b3787f1701bdbd6103b4f78d58a39fa87f7f2676242589556d1927c612e1d6929cba65d25e9b750723d1741a2c41bcc17b849b14f92bd8cf990e7ff298894/EtherEngine",
+});
+const auth = new Auth();
 
 function App() {
   return (
-      <Main />
+    <Main />
   );
 }
 
@@ -24,23 +32,27 @@ function Main() {
   const isUserRoute = userRoutes.includes(location.pathname);
 
   return (
-    <div>
-      {isUserRoute && <UserNavigationBar />}
-      {!isUserRoute && location.pathname !== '/' && <ProviderNavigationBar />}
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        {/* User */}
-        <Route path="/dashboard" element={<UserDashboard />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/help" element={<HelpSupport />} />
+    <PolybaseProvider polybase={polybase}>
+      <AuthProvider auth={auth} polybase={polybase}>
+        <div>
+          {isUserRoute && <UserNavigationBar />}
+          {!isUserRoute && location.pathname !== '/' && <ProviderNavigationBar />}
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            {/* User */}
+            <Route path="/dashboard" element={<UserDashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/help" element={<HelpSupport />} />
 
-        {/* StorageProvider/Developer */}
-        <Route path="/providerDashboard" element={<JobDiscovery />} />
-        <Route path="/data" element={<DataManager />} />
-        <Route path="/jobs" element={<JobManager />} />
-        {/* <Route path="/discover" element={<JobDiscovery />} /> */}
-        </Routes>
-    </div>
+            {/* StorageProvider/Developer */}
+            <Route path="/providerDashboard" element={<JobDiscovery />} />
+            <Route path="/data" element={<DataManager />} />
+            <Route path="/jobs" element={<JobManager />} />
+            {/* <Route path="/discover" element={<JobDiscovery />} /> */}
+          </Routes>
+        </div>
+      </AuthProvider>
+    </PolybaseProvider>
   );
 }
 

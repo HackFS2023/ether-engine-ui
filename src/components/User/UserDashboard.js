@@ -27,7 +27,7 @@ import {
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { makeStyles } from '@material-ui/core/styles';
-
+import { useAuth, useIsAuthenticated, usePolybase } from "@polybase/react";
 
 // Material UI styles
 const useStyles = makeStyles((theme) => ({
@@ -84,7 +84,8 @@ function Dashboard({ computations }) {
   } = useWeb3Storage();
   const {
     keys,
-    generateKeys,
+    loadKeys,
+    clearKeys,
     sendMessage,
     sendResponse,
     events,
@@ -178,15 +179,28 @@ function Dashboard({ computations }) {
     }
   }
 
+  const polybase = usePolybase();
+  const { auth: polyAuth, state: polyState, loading: polyLoading } = useAuth();
+  const [isLoggedIn, loading] = useIsAuthenticated();
+
   useEffect(() => {
     dockerSpecRef.current = dockerSpec;
   }, [dockerSpec])
 
 
   useEffect(() => {
-    generateKeys();
-  }, [])
-
+    if (polyState && polyState.type === 'metamask'
+     && !polyLoading) {
+      console.log('loadKeys called');
+      (async () => {
+        await loadKeys(polybase, polyState.userId);
+      })();
+    } else {
+      console.log('clearKeys called');
+      clearKeys();
+    }
+  }, [polybase, polyState, polyLoading, clearKeys]);
+  
   useEffect(() => {
     if (coinbase && provider && !etherEngine) {
       initiateContract(provider, netId);
@@ -294,13 +308,14 @@ function Dashboard({ computations }) {
     </Button>
       <Grid container spacing={3} style={{ marginTop: "20px" }}>
         <Grid item xs={12}>
-          {!coinbase && !etherEngine &&
+          {((!coinbase && !etherEngine) || !isLoggedIn) &&
             <Button
               variant="contained"
               color="primary"
               onClick={async () => {
                 try {
                   await loadWeb3Modal();
+                  await polyAuth.signIn();
                 } catch (err) {
                   console.log(err)
                 }
@@ -358,7 +373,7 @@ function Dashboard({ computations }) {
       </Grid>
       <div>
       {events && events.map(item => {
-        if (item.pubkey === keys.pk) {
+        if (keys && item.pubkey === keys.pk) {
           return (
             <>
               <div>{item.content}</div>
@@ -399,7 +414,7 @@ function Dashboard({ computations }) {
 
 
   function renderEvent(item) {
-    if (item.pubkey === keys.pk) {
+    if (keys && item.pubkey === keys.pk) {
         const contentArr = item.content.split(' : ');
         const title = contentArr[0];
         const description = contentArr[1];
