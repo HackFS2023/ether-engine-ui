@@ -5,6 +5,7 @@ import UserDashboard from './components/User/UserDashboard';
 import Profile from './components/User/Profile';
 import HelpSupport from './components/User/HelpSupport';
 import LandingPage from './components/LandingPage/LandingPage';
+import ThreeMaterialXNoise from './components/ThreeMaterialXNoise';
 
 import ProviderNavigationBar from './components/Provider/ProviderNavigationBar';
 import ContractManager from './components/Provider/ContractManager';
@@ -51,6 +52,11 @@ function Main() {
             {/* <Route path="/discover" element={<JobDiscovery />} /> */}
           </Routes>
         </div>
+        <div className="App">
+      <h1>My React App</h1>
+      <ThreeMaterialXNoise />
+    </div>
+
       </AuthProvider>
     </PolybaseProvider>
   );
