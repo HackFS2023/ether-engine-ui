@@ -63,10 +63,6 @@ At a high level, the workflow of the Ether Engine UI is as follows:
 3. The user then computes the job using a smart contract that interacts with Lilypad (Bachalao Oracle FVM).
 4. Once the computation is complete, the user can download the output results.
 
-## Contributing
-
-(Provide instructions on how to contribute to the project here.)
-
 ## License
 
 (Provide information about the project's license here.)
