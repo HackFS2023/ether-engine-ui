@@ -65,4 +65,4 @@ At a high level, the workflow of the Ether Engine UI is as follows:
 
 ## License
 
-(Provide information about the project's license here.)
+[MIT](https://choosealicense.com/licenses/mit/)
