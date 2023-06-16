@@ -1,70 +1,72 @@
-# Getting Started with Create React App
+# Ether Engine UI
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Introduction
 
-## Available Scripts
+*Ether Engine UI* is a decentralized job marketplace where users can request computations and providers can discover these jobs, respond with scripts, and perform the computations. The project is under the HackFS2023 organization.
+
+The project uses several technologies:
+
+- **Polybase**: Polybase is a privacy-preserving decentralized database built on zk-STARKs. It uses a zk-rollup combined with native indexing to allow decentralized database rules, fast queries, and scalable writes. It's similar to a NoSQL-like database, with validation rules written in a JavaScript-like language. The SDK is similar to Firestore and Supabase. Polybase is designed to combine the best attributes of web2 databases and blockchains, offering row-level token gating, wallet-based permissions, and "self-sovereign data". It's significantly cheaper than on-chain storage, making it a more efficient solution for scalable structured data storage.
+
+- **Nostr**: A decentralized event system. It is used to handle events and responses between users and providers.
+
+- **IPFS**: InterPlanetary File System, a protocol and network designed to create a content-addressable, peer-to-peer method of storing and sharing hypermedia in a distributed file system.
+
+- **Filecoin Virtual Machine**: The computational layer of the Filecoin network where smart contracts are executed.
+
+## Getting Started
+
+This project was bootstrapped with [Create React App](https://create-react-app.dev/).
+
+### Prerequisites
+
+- Node.js
+- npm
+
+### Installation
+
+1. Clone the repository
+
+`git clone https://github.com/HackFS2023/ether-engine-ui.git`
+
+2. Install NPM packages
+
+`npm install`
+
+
+### Usage
 
 In the project directory, you can run:
 
-### `npm start`
+- `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Runs the app in the development mode. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- `npm test`
 
-### `npm test`
+Launches the test runner in the interactive watch mode.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- `npm run build`
 
-### `npm run build`
+Builds the app for production to the `build` folder.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- `npm run eject`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Note: this is a one-way operation. Once you eject, you can't go back!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Instructions
 
-### `npm run eject`
+At a high level, the workflow of the Ether Engine UI is as follows:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. A user creates a request for a computation.
+2. A developer discovers this job and creates a Docker specification that satisfies the user's request.
+3. The user then computes the job using a smart contract that interacts with Lilypad (Bachalao Oracle FVM).
+4. Once the computation is complete, the user can download the output results.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Contributing
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+(Provide instructions on how to contribute to the project here.)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## License
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+(Provide information about the project's license here.)
