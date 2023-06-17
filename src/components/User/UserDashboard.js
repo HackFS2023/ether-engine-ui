@@ -297,8 +297,51 @@ function Dashboard({ computations }) {
       </Dialog>
     );
   }
+
+
+  const renderEvent = (item) => {
+      if (item.pubkey === keys.pk) {
+          const contentArr = item.content.split(' : ');
+          const title = contentArr[0];
+          const description = contentArr[1];
+
+          return (
+              <Card style={{ marginBottom: '10px' }}>
+                  <CardContent>
+                      <Typography variant="body2" color="textPrimary" component="h4">{title}</Typography>
+                      <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
+
+
+                        {eventsResponses?.map(itemResp => {
+                          if (itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply")[0]) {
+                            const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
+                            if (!dockerTag) return null;
+                            return (
+                              <>
+                                <Typography variant="body2" color="textPrimary" component="p">{itemResp.content}</Typography>
+                                {etherEngine &&
+                                  <button onClick={async () => {
+                                    try {
+                                      setDockerSpec(dockerTag[0][1]);
+                                      setModalInputsOpen(true);
+                                    } catch (err) {
+                                      console.log(err)
+                                    }
+                                  }}>Compute</button>
+                                }
+                              </>
+                            );
+                          }
+                        })}
+                  </CardContent>
+              </Card>
+          );
+      }
+  }
+
+
   return (
-    <Container maxWidth="md" style={{ marginTop: "20px" }}>
+    <Container maxWidth="large" style={{ marginTop: "20px" }}>
       <Typography variant="h2" align="center">
         Dashboard
       </Typography>
@@ -360,6 +403,12 @@ function Dashboard({ computations }) {
                   })
                 }
                 {
+                  jobsFailed?.length > 0 &&
+                  <Typography variant="h4" align="center">
+                    Failed Computations
+                  </Typography>
+                }
+                {
                   jobsFailed?.map(job => {
                     return (
                       <ListItem>
@@ -381,51 +430,6 @@ function Dashboard({ computations }) {
       {renderComputeModal()}
     </Container>
   );
-
-
-
-
-  function renderEvent(item) {
-    if (item.pubkey === keys.pk) {
-        const contentArr = item.content.split(' : ');
-        const title = contentArr[0];
-        const description = contentArr[1];
-
-        return (
-            <Card style={{ marginBottom: '10px' }}>
-                <CardHeader title={title} />
-                <CardContent>
-                    <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
-
-
-                      {eventsResponses?.map(itemResp => {
-                        if (itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply")[0]) {
-                          const dockerTag = itemResp.tags.filter(tag => tag[0] === "docker-spec");
-                          if (!dockerTag) return null;
-                          return (
-                            <>
-                              <p>{itemResp.content}</p>
-                              {etherEngine &&
-                                <button onClick={async () => {
-                                  try {
-                                    setDockerSpec(dockerTag[0][1]);
-                                    setModalInputsOpen(true);
-                                  } catch (err) {
-                                    console.log(err)
-                                  }
-                                }}>Compute</button>
-                              }
-                            </>
-                          );
-                        }
-                      })}
-                </CardContent>
-            </Card>
-        );
-    }
-}
-
-
 }
 
 export default Dashboard;

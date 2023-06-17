@@ -1,4 +1,4 @@
-import React, { useState,useEffect,useCallback } from 'react';
+import { useState,useEffect,useCallback } from 'react';
 
 import { Web3Storage } from 'web3.storage'
 
@@ -18,9 +18,18 @@ export default function useWeb3Storage(){
     return cid
   },[client]);
 
+  const get = useCallback(async (cid) => {
+    const res = await client.get(cid); // Web3Response
+    const files = await res.files(); // Web3File[]
+    for (const file of files) {
+      console.log(`${file.cid} ${file.name} ${file.size}`);
+    }
+  },[client])
+
   return({
     client,
-    store
+    store,
+    get
   })
 
 }

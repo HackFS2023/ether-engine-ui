@@ -59,7 +59,7 @@ const modalStyle = {
     setDockerEntrypoint(event.target.value);
   }
 
-  
+
   const handleCIDChange = (event) => {
     setSpecCIDInput(event.target.value);
   }
@@ -99,7 +99,7 @@ const modalStyle = {
       }],
       "Deal":{"Concurrency":1}
     };
-    
+
 
     setSpec(newSpec); // Update the spec state variable with the created spec
 
@@ -135,20 +135,20 @@ const modalStyle = {
   const renderJobs = () => (
     events?.map(item => (
       <React.Fragment key={item.id}>
-        <div style={{ 
-          display: 'flex', 
+        <div style={{
+          display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          margin: '20px', 
-          padding: '20px', 
-          boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', 
+          justifyContent: 'center',
+          alignItems: 'center',
+          margin: '20px',
+          padding: '20px',
+          boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
           borderRadius: '5px',
           backgroundColor: 'white',
           color: 'black',
           width: '50%',
           overflow: 'auto',
-          alignSelf: 'center' 
+          alignSelf: 'center'
         }}>
           {item.content}
           <button onClick={() => {
@@ -157,34 +157,31 @@ const modalStyle = {
             setModalOpenResp(true);
           }}>Send Script</button>
         </div>
-        <div style={{ 
-          padding: '25px',
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center', 
-        }}>
+
           {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
             const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
             if (!dockerTag) return null;
             return (
-              <Accordion key={itemResp.id}>
+              <Accordion key={itemResp.id} style={{
+                  width: '80%',
+                  margin: '20px'
+              }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <p>{itemResp.content}</p>
                 </AccordionSummary>
                 <AccordionDetails>
-                <div style={{ 
-                  display: "flex", 
-                  flexDirection: "column", 
-                  overflow: "auto", 
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "auto",
                   padding: "25px",
-                  boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', 
+                  boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
                   borderRadius: '5px',
                   backgroundColor: 'white',
                   color: 'black',
                   width: '50%',
                   overflow: 'auto',
-                  alignSelf: 'center' 
+                  alignSelf: 'center'
                 }}>
 
                   <React.Fragment>
@@ -196,11 +193,10 @@ const modalStyle = {
               </Accordion>
             );
           })}
-        </div>
       </React.Fragment>
     ))
   );
-  
+
 
   const renderModal = () => {
     if (creatingDockerSpec) {
@@ -245,7 +241,7 @@ const modalStyle = {
       </Modal>
     );
   };
-  
+
 
   return (
     <div>
