@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import useNostr from '../../hooks/useNostr';
+import useWeb3Storage from '../../hooks/useWeb3Storage';
+
 import { Accordion, AccordionSummary, AccordionDetails } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 const JobDiscovery = () => {
   const { keys, generateKeys, sendMessage, sendResponse, events, eventsResponses } = useNostr();
+  const { get } = useWeb3Storage();
   const [modalOpenResp, setModalOpenResp] = useState(false);
   const [respEvent, setRespEvent] = useState();
   const [cidResp, setCidResp] = useState();
@@ -133,68 +136,78 @@ const modalStyle = {
     }
   }
   const renderJobs = () => (
-    events?.map(item => (
-      <React.Fragment key={item.id}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          margin: '20px',
-          padding: '20px',
-          boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
-          borderRadius: '5px',
-          backgroundColor: 'white',
-          color: 'black',
-          width: '50%',
-          overflow: 'auto',
-          alignSelf: 'center'
-        }}>
-          {item.content}
-          <button onClick={() => {
-            setRespEvent(item);
-            setCidResp(item.tags.find(tag => tag[0] === 'ipfs-hash')?.[1]);
-            setModalOpenResp(true);
-          }}>Send Script</button>
-        </div>
+    events?.map(item => {
+      const tagCid = item.tags.filter(tag => tag[0] === 'ipfs-hash');
+      return(
 
-          {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
-            const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
-            if (!dockerTag) return null;
-            return (
-              <Accordion key={itemResp.id} style={{
-                  width: '80%',
-                  margin: '20px'
-              }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <p>{itemResp.content}</p>
-                </AccordionSummary>
-                <AccordionDetails>
-                <div style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  overflow: "auto",
-                  padding: "25px",
-                  boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
-                  borderRadius: '5px',
-                  backgroundColor: 'white',
-                  color: 'black',
-                  width: '50%',
-                  overflow: 'auto',
-                  alignSelf: 'center'
+        <React.Fragment key={item.id}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            margin: '20px',
+            padding: '20px',
+            boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
+            borderRadius: '5px',
+            backgroundColor: 'white',
+            color: 'black',
+            width: '50%',
+            overflow: 'auto',
+            alignSelf: 'center'
+          }}>
+            {item.content}
+            <div style={{
+              flexDirection: 'row'
+            }}>
+            <button onClick={() => {get(tagCid[0][1])}}>Download data</button>
+
+            <button onClick={() => {
+              setRespEvent(item);
+              setCidResp(item.tags.find(tag => tag[0] === 'ipfs-hash')?.[1]);
+              setModalOpenResp(true);
+            }}>Send Script</button>
+            </div>
+          </div>
+
+            {eventsResponses?.filter(itemResp => itemResp.tags.find(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply" && itemResp.pubkey === keys.pk))?.map(itemResp => {
+              const dockerTag = itemResp.tags.find(tag => tag[0] === 'docker-spec');
+              if (!dockerTag) return null;
+              return (
+                <Accordion key={itemResp.id} style={{
+                    width: '80%',
+                    margin: '20px'
                 }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <p>{itemResp.content}</p>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                  <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "auto",
+                    padding: "25px",
+                    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
+                    borderRadius: '5px',
+                    backgroundColor: 'white',
+                    color: 'black',
+                    width: '50%',
+                    overflow: 'auto',
+                    alignSelf: 'center'
+                  }}>
 
-                  <React.Fragment>
-                    <label>Docker Spec:</label>
-                    <div style={{ overflow: "auto" }}>{dockerTag[1]}</div>
-                  </React.Fragment>
-                </div>
-                </AccordionDetails>
-              </Accordion>
-            );
-          })}
-      </React.Fragment>
-    ))
+                    <React.Fragment>
+                      <label>Docker Spec:</label>
+                      <div style={{ overflow: "auto" }}>{dockerTag[1]}</div>
+                    </React.Fragment>
+                  </div>
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
+        </React.Fragment>
+      )
+    })
   );
 
 

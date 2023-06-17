@@ -83,8 +83,8 @@ function Dashboard({ computations }) {
   const [isLoggedIn, loading] = useIsAuthenticated();
 
   const {
-    client,
-    store
+    store,
+    get
   } = useWeb3Storage();
   const {
     keys,
@@ -304,13 +304,13 @@ function Dashboard({ computations }) {
           const contentArr = item.content.split(' : ');
           const title = contentArr[0];
           const description = contentArr[1];
+          const tagCid = item.tags.filter(tag => tag[0] === 'ipfs-hash');
 
           return (
               <Card style={{ marginBottom: '10px' }}>
                   <CardContent>
                       <Typography variant="body2" color="textPrimary" component="h4">{title}</Typography>
                       <Typography variant="body2" color="textSecondary" component="p">{description}</Typography>
-
 
                         {eventsResponses?.map(itemResp => {
                           if (itemResp.tags.filter(tag => tag[0] === 'e' && tag[1] === item.id && tag[3] === "reply")[0]) {
@@ -398,6 +398,7 @@ function Dashboard({ computations }) {
                             {job.result}
                           </Link>
                         </ListItemText>
+                        <button onClick={() => {get(job.result)}}>Download result</button>
                       </ListItem>
                     );
                   })
