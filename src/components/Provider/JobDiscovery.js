@@ -193,7 +193,7 @@ const modalStyle = {
                     color: 'black',
                     width: '50%',
                     overflow: 'auto',
-                    alignSelf: 'center'
+                    alignSelf: 'center',
                   }}>
 
                     <React.Fragment>
@@ -247,7 +247,7 @@ const modalStyle = {
             Docker Spec JSON:
             <input type="file" name="script" onChange={handleFileUpload} accept=".json" />
           </label>
-          {spec && <div style={{ overflow: "auto", marginTop: '10px', marginBottom: '10px' }}>{JSON.stringify(spec)}</div>}
+          {spec && <div style={{ overflowX: "auto", marginTop: '10px', marginBottom: '10px',maxWidth:"500px"}}>{JSON.stringify(spec)}</div>}
           <button type="submit" style={{marginRight: '10px'}}>Submit</button>
         </form>
         <button onClick={() => setModalOpenResp(false)}>Close</button>
