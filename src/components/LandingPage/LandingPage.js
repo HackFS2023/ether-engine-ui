@@ -25,9 +25,6 @@ const LandingPage = () => {
 
         <h3>EtherEngine is a cutting-edge platform that leverages Bacalhau's distributed computing architecture to process vast amounts of data securely and efficiently. Bacalhau enables us to run your computation tasks wherever your data is stored, reducing costs and boosting performance.</h3>
 
-        <h3>Trustless Security with Lit Protocol</h3>
-        <p>Lit Protocol forms the backbone of our security infrastructure, providing distributed cryptographic key management. With Lit, your data is always safe, encrypted based on set conditions, and decrypted only when these conditions are met.</p>
-
         <h3>Global Storage Network with IPFS</h3>
         <p>In collaboration with IPFS, EtherEngine lets you tap into a global, decentralized storage network. Whether you're storing or retrieving data, IPFS ensures reliable, continuous service tailored to your needs.</p>
 
